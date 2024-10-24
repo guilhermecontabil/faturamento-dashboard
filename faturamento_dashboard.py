@@ -55,32 +55,32 @@ dados_impostos = {
 df_faturamento = pd.DataFrame(dados_faturamento)
 df_impostos = pd.DataFrame(dados_impostos)
 
-# Convertendo a coluna "Data" para o tipo datetime
-df_faturamento['Data'] = pd.to_datetime(df_faturamento['Data'])
-df_impostos['Periodo'] = pd.to_datetime(df_impostos['Periodo'], format='%Y-%m')
+# Convertendo a coluna "Data" para o tipo datetime e formatando para mês/ano
+df_faturamento['Data'] = pd.to_datetime(df_faturamento['Data'], errors='coerce').dt.to_period('M').dt.strftime('%m/%Y')
+df_impostos['Periodo'] = pd.to_datetime(df_impostos['Periodo'], format='%Y-%m').dt.to_period('M').dt.strftime('%m/%Y')
 
 # Filtrando os registros de impostos relacionados ao DAS
 df_das = df_impostos[df_impostos['Historico'].str.contains('DAS', case=False, na=False)].copy()
 
 # Ajustar o período para o primeiro dia do mês para alinhamento com os dados de faturamento
-df_das['Periodo_Mes'] = df_das['Periodo'].dt.to_period('M').dt.to_timestamp()
+df_das['Periodo_Mes'] = df_das['Periodo']
 
 # Agrupando por mês para obter o total do DAS pago em cada mês
 df_das_mensal = df_das.groupby('Periodo_Mes')['Valor_Pagar'].sum().reset_index()
-df_das_mensal.columns = ['Data', 'DAS_Pago']
+df_das_mensal.columns = ['Data', 'DAS_Simples']
 
 # Unindo com o dataframe de faturamento para realizar a comparação entre receita e DAS pago
-df_comparacao = pd.merge(df_faturamento, df_das_mensal, on='Data', how='left')
+df_comparacao = pd.merge(df_faturamento, df_das_mensal, left_on='Data', right_on='Data', how='left')
 
 # Preencher valores NaN do DAS como zero, onde não houve pagamento registrado
-df_comparacao['DAS_Pago'].fillna(0, inplace=True)
+df_comparacao['DAS_Simples'].fillna(0, inplace=True)
 
 # Calculando a proporção de DAS sobre Vendas (Receita)
-df_comparacao['Proporcao_DAS_Receita'] = (df_comparacao['DAS_Pago'] / df_comparacao['Vendas']) * 100
+df_comparacao['Proporcao_DAS_Receita'] = (df_comparacao['DAS_Simples'] / df_comparacao['Vendas']) * 100
 
 # Agrupando os outros impostos por tipo e por mês
 df_outros_impostos = df_impostos[~df_impostos['Historico'].str.contains('DAS', case=False, na=False)].copy()
-df_outros_impostos['Periodo_Mes'] = df_outros_impostos['Periodo'].dt.to_period('M').dt.to_timestamp()
+df_outros_impostos['Periodo_Mes'] = df_outros_impostos['Periodo']
 df_outros_impostos_mensal = df_outros_impostos.groupby(['Periodo_Mes', 'Historico'])['Valor_Pagar'].sum().reset_index()
 df_outros_impostos_mensal.columns = ['Data', 'Historico', 'Valor_Pago']
 
@@ -100,7 +100,7 @@ total_compras = df_faturamento['Compras'].sum()
 total_folha = df_faturamento['Folha_Liquida'].sum()
 total_impostos = df_impostos['Valor_Pagar'].sum()
 
-total_das = df_das_mensal['DAS_Pago'].sum()
+total_das = df_das_mensal['DAS_Simples'].sum()
 total_outros_impostos = total_impostos - total_das
 
 col1, col2, col3, col4, col5 = st.columns(5)
@@ -108,43 +108,39 @@ col1.metric(label='Total Vendas (Jan-Set)', value=formatar_moeda(total_vendas))
 col2.metric(label='Total Compras (Jan-Set)', value=formatar_moeda(total_compras))
 col3.metric(label='Folha Líquida (Jan-Set)', value=formatar_moeda(total_folha))
 col4.metric(label='Total Impostos (Jan-Set)', value=formatar_moeda(total_impostos))
-col5.metric(label='Total DAS Pago (Jan-Set)', value=formatar_moeda(total_das))
+col5.metric(label='Total DAS Simples (Jan-Set)', value=formatar_moeda(total_das))
 
 # Revenue vs Purchases Chart
 st.header('Vendas vs Compras (Mensal)')
-faturamento_monthly = df_faturamento.groupby(df_faturamento['Data'].dt.to_period('M')).agg({'Compras': 'sum', 'Vendas': 'sum'}).reset_index()
-faturamento_monthly['Data'] = faturamento_monthly['Data'].dt.to_timestamp()
-
-# Map months to Portuguese manually
-month_map = {
-    1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril', 5: 'Maio', 6: 'Junho',
-    7: 'Julho', 8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
-}
-faturamento_monthly['Data'] = faturamento_monthly['Data'].apply(lambda x: f"{month_map[x.month]} de {x.year}")
+faturamento_monthly = df_faturamento.groupby(df_faturamento['Data']).agg({'Compras': 'sum', 'Vendas': 'sum'}).reset_index()
 
 fig1 = px.line(faturamento_monthly, x='Data', y=['Compras', 'Vendas'], title='Compras e Vendas ao longo do tempo', markers=True)
-fig1.update_layout(yaxis_title='Valor (R$)', xaxis_title='Mês', legend_title_text='Categoria')
+fig1.update_layout(yaxis_title='Valor (R$)', xaxis_title='Mês/Ano', legend_title_text='Categoria')
 st.plotly_chart(fig1, use_container_width=True)
 
 # DAS vs Receita Chart
-st.header('Comparação entre Receita do Mês e DAS Pago')
-fig2 = px.bar(df_comparacao, x='Data', y=['Vendas', 'DAS_Pago'], barmode='group', title='Receita vs DAS Pago', labels={'value': 'Valor (R$)', 'variable': 'Categoria'})
-fig2.update_layout(xaxis_title='Mês', yaxis_title='Valor (R$)')
+st.header('Comparação entre Receita do Mês e DAS Simples')
+fig2 = px.bar(df_comparacao, x='Data', y=['Vendas', 'DAS_Simples'], barmode='group', title='Receita vs DAS Simples', labels={'value': 'Valor (R$)', 'variable': 'Categoria'})
+fig2.update_layout(xaxis_title='Mês/Ano', yaxis_title='Valor (R$)')
 st.plotly_chart(fig2, use_container_width=True)
 
 # Outros Impostos
 st.header('Outros Impostos Pagos (Mensal por Tipo)')
 fig3 = px.bar(df_outros_impostos_mensal, x='Data', y='Valor_Pago', color='Historico', title='Outros Impostos por Tipo', labels={'Valor_Pago': 'Valor (R$)'})
-fig3.update_layout(barmode='stack', xaxis_title='Mês', yaxis_title='Total Pago (R$)')
+fig3.update_layout(barmode='stack', xaxis_title='Mês/Ano', yaxis_title='Total Pago (R$)')
 st.plotly_chart(fig3, use_container_width=True)
 
-# Detailed Tables (Optional Section)
-with st.expander('Ver Tabelas Detalhadas'):
-    st.subheader('Dados de Faturamento')
-    df_faturamento['Data'] = df_faturamento['Data'].dt.strftime('%d/%m/%Y')
-    st.dataframe(df_faturamento.style.format({'Compras': 'R$ {:,.2f}', 'Vendas': 'R$ {:,.2f}', 'Folha_Liquida': 'R$ {:,.2f}'}))
-    st.subheader('Dados de Impostos')
-    st.dataframe(df_outros_impostos_mensal.style.format({'Valor_Pago': 'R$ {:,.2f}'}))
+# Detailed Tables Section
+st.header('Tabelas Detalhadas')
+
+st.subheader('Dados de Faturamento/Compras/Folha')
+st.dataframe(df_faturamento.style.format({'Compras': 'R$ {:,.2f}', 'Vendas': 'R$ {:,.2f}', 'Folha_Liquida': 'R$ {:,.2f}'}))
+
+st.subheader('Dados de Impostos - DAS Simples e Outros Impostos')
+st.dataframe(df_impostos.style.format({'Valor_Pagar': 'R$ {:,.2f}'}))
+
+st.subheader('Outros Impostos por Mês e Tipo')
+st.dataframe(df_outros_impostos_mensal.style.format({'Valor_Pago': 'R$ {:,.2f}'}))
 
 # Summary & Conclusion
 st.header('Resumo e Conclusão')
