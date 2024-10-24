@@ -25,16 +25,16 @@ data = {
 # Criando o DataFrame
 df = pd.DataFrame(data)
 
-# Dicionário para tradução de meses
+# Convertendo a coluna "Data" para o tipo datetime
+df['Data'] = pd.to_datetime(df['Data'])
+
+# Criando uma coluna formatada para exibição com o mês e o ano em português
 meses_traducao = {
     'Jan': 'Jan', 'Feb': 'Fev', 'Mar': 'Mar', 'Apr': 'Abr', 'May': 'Mai',
     'Jun': 'Jun', 'Jul': 'Jul', 'Aug': 'Ago', 'Sep': 'Set', 'Oct': 'Out',
     'Nov': 'Nov', 'Dec': 'Dez'
 }
-
-# Convertendo a coluna "Data" para o tipo datetime e formatando para mês/ano
-df['Data'] = pd.to_datetime(df['Data']).dt.strftime('%b %Y')  # Primeiro formata para 'Jan 2024', etc.
-df['Data'] = df['Data'].replace(meses_traducao, regex=True)  # Depois traduz os meses para português
+df['Data_Exibicao'] = df['Data'].dt.strftime('%b %Y').replace(meses_traducao, regex=True)
 
 # Definindo cores para os gráficos
 cores = ['silver', 'green']  # 'silver' para Compras e 'green' para Vendas
@@ -44,31 +44,38 @@ st.title('Dashboard Interativo - Faturamento da Empresa')
 
 # Seção 1: Compras ao longo do tempo
 st.header('Compras ao Longo do Tempo')
-fig_compras = px.line(df, x='Data', y='Compras', title='Compras Mensais', markers=True, color_discrete_sequence=['silver'])
+fig_compras = px.line(df, x='Data_Exibicao', y='Compras', title='Compras Mensais', markers=True, color_discrete_sequence=['silver'])
 st.plotly_chart(fig_compras)
 
 # Seção 2: Vendas ao longo do tempo
 st.header('Vendas ao Longo do Tempo')
-fig_vendas = px.line(df, x='Data', y='Vendas', title='Vendas Mensais', markers=True, color_discrete_sequence=['green'])
+fig_vendas = px.line(df, x='Data_Exibicao', y='Vendas', title='Vendas Mensais', markers=True, color_discrete_sequence=['green'])
 st.plotly_chart(fig_vendas)
 
 # Seção 3: Comparação entre Compras e Vendas
 st.header('Comparação de Compras e Vendas')
-fig_comparacao = px.bar(df, x='Data', y=['Compras', 'Vendas'], barmode='group', title='Compras vs Vendas', color_discrete_sequence=cores)
+fig_comparacao = px.bar(df, x='Data_Exibicao', y=['Compras', 'Vendas'], barmode='group', title='Compras vs Vendas', color_discrete_sequence=cores)
 st.plotly_chart(fig_comparacao)
 
-# Seção 4: Resumo Estatístico
-st.header('Resumo Estatístico')
+# Seção 4: Resumo Estatístico Explicado
+st.header('Resumo Estatístico Explicado')
 
-# Criar uma cópia do DataFrame para formatação
-df_formatado = df.copy()
+# Resumo Estatístico Original
+st.subheader("Dados Resumidos:")
+st.write(df.describe())
 
-# Aplicar a função de formatação a cada coluna numérica
-df_formatado['Compras'] = df_formatado['Compras'].apply(formatar_moeda)
-df_formatado['Vendas'] = df_formatado['Vendas'].apply(formatar_moeda)
-
-# Mostrar o DataFrame formatado no dashboard
-st.write(df_formatado)
+# Explicação das Métricas
+st.subheader("Explicação das Métricas Estatísticas:")
+st.markdown("""
+- **count**: Número de registros (quantidade de entradas de dados).
+- **mean**: Média dos valores.
+- **std**: Desvio padrão, mostra o quanto os valores variam em relação à média.
+- **min**: Valor mínimo da série de dados.
+- **25%**: Primeiro quartil, 25% dos valores são menores ou iguais a este valor.
+- **50%**: Mediana, metade dos valores são menores ou iguais a este valor.
+- **75%**: Terceiro quartil, 75% dos valores são menores ou iguais a este valor.
+- **max**: Valor máximo da série de dados.
+""")
 
 # Seção 5: Análise de Desempenho
 st.header('Análise de Desempenho')
@@ -89,28 +96,28 @@ else:
 
 # Seção 6: Adicionar Filtro por Data (Opcional)
 st.header('Filtrar por Data')
-start_date = st.date_input('Data Inicial', pd.to_datetime(df['Data']).min())
-end_date = st.date_input('Data Final', pd.to_datetime(df['Data']).max())
+start_date = st.date_input('Data Inicial', df['Data'].min())
+end_date = st.date_input('Data Final', df['Data'].max())
 
 if start_date <= end_date:
-    filtered_df = df[(pd.to_datetime(df['Data']) >= pd.to_datetime(start_date)) & (pd.to_datetime(df['Data']) <= pd.to_datetime(end_date))]
+    filtered_df = df[(df['Data'] >= start_date) & (df['Data'] <= end_date)]
     st.write("Dados Filtrados:")
 
     # Aplicar formatação ao DataFrame filtrado
     filtered_df_formatado = filtered_df.copy()
     filtered_df_formatado['Compras'] = filtered_df_formatado['Compras'].apply(formatar_moeda)
     filtered_df_formatado['Vendas'] = filtered_df_formatado['Vendas'].apply(formatar_moeda)
-    st.write(filtered_df_formatado)
+    st.write(filtered_df_formatado[['Data_Exibicao', 'Compras', 'Vendas']])
 
     # Atualizar Gráficos com Filtro
     st.subheader('Gráficos Atualizados')
-    fig_compras_filtered = px.line(filtered_df, x='Data', y='Compras', title='Compras Mensais Filtradas', markers=True, color_discrete_sequence=['silver'])
+    fig_compras_filtered = px.line(filtered_df, x='Data_Exibicao', y='Compras', title='Compras Mensais Filtradas', markers=True, color_discrete_sequence=['silver'])
     st.plotly_chart(fig_compras_filtered)
 
-    fig_vendas_filtered = px.line(filtered_df, x='Data', y='Vendas', title='Vendas Mensais Filtradas', markers=True, color_discrete_sequence=['green'])
+    fig_vendas_filtered = px.line(filtered_df, x='Data_Exibicao', y='Vendas', title='Vendas Mensais Filtradas', markers=True, color_discrete_sequence=['green'])
     st.plotly_chart(fig_vendas_filtered)
 
-    fig_comparacao_filtered = px.bar(filtered_df, x='Data', y=['Compras', 'Vendas'], barmode='group', title='Compras vs Vendas (Filtrado)', color_discrete_sequence=cores)
+    fig_comparacao_filtered = px.bar(filtered_df, x='Data_Exibicao', y=['Compras', 'Vendas'], barmode='group', title='Compras vs Vendas (Filtrado)', color_discrete_sequence=cores)
     st.plotly_chart(fig_comparacao_filtered)
 else:
     st.error('A data final deve ser posterior à data inicial.')
