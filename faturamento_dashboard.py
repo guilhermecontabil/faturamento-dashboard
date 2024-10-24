@@ -3,10 +3,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
-import locale
-
-# Set locale to Brazilian Portuguese for currency and date formatting
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 # Load data (use your files here)
 faturamento_file = 'Faturamento e Compras 01a092024.xlsx'
@@ -42,24 +38,32 @@ total_compras = faturamento_df['Compras'].sum()
 total_folha = faturamento_df['Folha_Liquida'].sum()
 total_impostos = impostos_df['Valor_Pagar'].sum()
 
+# Format values to Brazilian Real manually
 col1, col2, col3, col4 = st.columns(4)
-col1.metric(label='Total Vendas (Jan-Set)', value=f"R$ {total_vendas:,.2f}")
-col2.metric(label='Total Compras (Jan-Set)', value=f"R$ {total_compras:,.2f}")
-col3.metric(label='Folha Líquida (Jan-Set)', value=f"R$ {total_folha:,.2f}")
-col4.metric(label='Total Impostos (Jan-Set)', value=f"R$ {total_impostos:,.2f}")
+col1.metric(label='Total Vendas (Jan-Set)', value=f"R$ {total_vendas:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col2.metric(label='Total Compras (Jan-Set)', value=f"R$ {total_compras:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col3.metric(label='Folha Líquida (Jan-Set)', value=f"R$ {total_folha:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col4.metric(label='Total Impostos (Jan-Set)', value=f"R$ {total_impostos:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
 # Revenue vs Purchases Chart
 st.header('Vendas vs Compras (Mensal)')
 faturamento_monthly = faturamento_df.groupby(faturamento_df['Data'].dt.to_period('M')).agg({'Compras': 'sum', 'Vendas': 'sum'}).reset_index()
 faturamento_monthly['Data'] = faturamento_monthly['Data'].dt.to_timestamp()
-faturamento_monthly['Data'] = faturamento_monthly['Data'].dt.strftime('%B de %Y')
+
+# Map months to Portuguese manually
+month_map = {
+    1: 'Janeiro', 2: 'Fevereiro', 3: 'Março', 4: 'Abril', 5: 'Maio', 6: 'Junho',
+    7: 'Julho', 8: 'Agosto', 9: 'Setembro', 10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
+}
+faturamento_monthly['Data'] = faturamento_monthly['Data'].apply(lambda x: f"{month_map[x.month]} de {x.year}")
+
 fig1 = px.line(faturamento_monthly, x='Data', y=['Compras', 'Vendas'], title='Compras e Vendas ao longo do tempo', markers=True)
 fig1.update_layout(yaxis_title='Valor (R$)', xaxis_title='Mês', legend_title_text='Categoria')
 st.plotly_chart(fig1, use_container_width=True)
 
 # Tax Payments by Type
 st.header('Pagamentos de Impostos (Detalhado)')
-impostos_df_grouped['Periodo'] = impostos_df_grouped['Periodo'].dt.strftime('%B de %Y')
+impostos_df_grouped['Periodo'] = impostos_df_grouped['Periodo'].apply(lambda x: f"{month_map[x.month]} de {x.year}")
 fig2 = px.bar(impostos_df_grouped, x='Periodo', y='Valor_Pagar', color='Historico', title='Pagamentos de Impostos por Tipo', labels={'Valor_Pagar': 'Valor (R$)'})
 fig2.update_layout(barmode='stack', xaxis_title='Mês', yaxis_title='Total Pago (R$)')
 st.plotly_chart(fig2, use_container_width=True)
