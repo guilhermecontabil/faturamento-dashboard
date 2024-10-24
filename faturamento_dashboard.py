@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import locale
+
+# Configurar locale para o Brasil (para exibir valores no formato R$)
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 # Dados do Faturamento
 data = {
@@ -21,8 +25,9 @@ data = {
 # Criando o DataFrame
 df = pd.DataFrame(data)
 
-# Convertendo a coluna "Data" para o tipo datetime
+# Convertendo a coluna "Data" para o tipo datetime e formatando para mês/ano
 df['Data'] = pd.to_datetime(df['Data'])
+df['Data'] = df['Data'].dt.strftime('%b %Y')  # Exibir apenas mês e ano (ex.: jan 2024)
 
 # Título do Dashboard
 st.title('Dashboard Interativo - Faturamento da Empresa')
@@ -51,8 +56,12 @@ st.header('Análise de Desempenho')
 total_compras = df['Compras'].sum()
 total_vendas = df['Vendas'].sum()
 
-st.metric("Total de Compras", f"R$ {total_compras:,.2f}")
-st.metric("Total de Vendas", f"R$ {total_vendas:,.2f}")
+# Formatando os valores como moeda brasileira
+total_compras_formatado = locale.currency(total_compras, grouping=True)
+total_vendas_formatado = locale.currency(total_vendas, grouping=True)
+
+st.metric("Total de Compras", total_compras_formatado)
+st.metric("Total de Vendas", total_vendas_formatado)
 
 if total_vendas > total_compras:
     st.success("Parabéns! O total de vendas é maior do que o total de compras.")
@@ -65,7 +74,7 @@ start_date = st.date_input('Data Inicial', df['Data'].min())
 end_date = st.date_input('Data Final', df['Data'].max())
 
 if start_date <= end_date:
-    filtered_df = df[(df['Data'] >= pd.to_datetime(start_date)) & (df['Data'] <= pd.to_datetime(end_date))]
+    filtered_df = df[(pd.to_datetime(df['Data']) >= pd.to_datetime(start_date)) & (pd.to_datetime(df['Data']) <= pd.to_datetime(end_date))]
     st.write("Dados Filtrados:")
     st.write(filtered_df)
 
@@ -81,4 +90,3 @@ if start_date <= end_date:
     st.plotly_chart(fig_comparacao_filtered)
 else:
     st.error('A data final deve ser posterior à data inicial.')
-
