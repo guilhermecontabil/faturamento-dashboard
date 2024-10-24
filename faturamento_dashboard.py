@@ -4,23 +4,50 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
-# Load data (use your files here)
-faturamento_file = 'Faturamento e Compras 01a092024.xlsx'
-impostos_file = 'RelacaoImpostos01a092024.xlsx'
+# Função para formatar moeda no padrão brasileiro
+def formatar_moeda(valor):
+    return f'R$ {valor:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
 
-# Load and clean the Faturamento data
-faturamento_df = pd.read_excel(faturamento_file, sheet_name='Faturamento', header=3)
-faturamento_df.columns = ['Data', 'Compras', 'Vendas', 'Folha_Liquida', 'Compra_Ativo', 'Mat_Uso_Consumo']
-faturamento_df['Data'] = pd.to_datetime(faturamento_df['Data'], errors='coerce')
-faturamento_df.dropna(subset=['Data'], inplace=True)
+# Dados de Faturamento e Compras (substituindo a necessidade de arquivos externos)
+dados_faturamento = {
+    'Data': [
+        '2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01',
+        '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01', '2024-09-01'
+    ],
+    'Compras': [
+        105160.60, 107065.02, 64392.80, 120088.99,
+        124917.39, 89430.32, 115399.63, 81134.93, 72725.11
+    ],
+    'Vendas': [
+        79964.37, 105745.62, 127695.82, 41245.16,
+        69917.40, 105804.46, 151307.07, 112968.77, 142545.12
+    ],
+    'Folha_Liquida': [
+        11614.67, 11459.96, 11220.51, 11982.91,
+        12607.28, 11809.55, 12145.88, 12400.17, 13012.31
+    ]
+}
 
-# Load and clean the Impostos data
-impostos_df = pd.read_excel(impostos_file, sheet_name='RelacaoImpostos')
-impostos_df.columns = ['Ignored', 'Periodo', 'Codigo', 'Historico', 'Valor_Pagar']
-impostos_df['Periodo'] = pd.to_datetime(impostos_df['Periodo'], errors='coerce')
-impostos_df.dropna(subset=['Periodo'], inplace=True)
-impostos_df_grouped = impostos_df.groupby([impostos_df['Periodo'].dt.to_period('M'), 'Historico'])['Valor_Pagar'].sum().reset_index()
-impostos_df_grouped['Periodo'] = impostos_df_grouped['Periodo'].dt.to_timestamp()
+# Dados de Impostos
+dados_impostos = {
+    'Periodo': [
+        '2024-01', '2024-02', '2024-03', '2024-04', '2024-05', '2024-06', '2024-07', '2024-08', '2024-09'
+    ],
+    'Historico': [
+        'IRPJ', 'Cofins', 'ICMS', 'ISS', 'IRPJ', 'Cofins', 'ICMS', 'ISS', 'IRPJ'
+    ],
+    'Valor_Pagar': [
+        2021.90, 1468.94, 283.65, 6806.03, 14.25, 2457.80, 3405.67, 3987.55, 1821.75
+    ]
+}
+
+# Criando DataFrames
+df_faturamento = pd.DataFrame(dados_faturamento)
+df_impostos = pd.DataFrame(dados_impostos)
+
+# Convertendo a coluna "Data" para o tipo datetime
+df_faturamento['Data'] = pd.to_datetime(df_faturamento['Data'])
+df_impostos['Periodo'] = pd.to_datetime(df_impostos['Periodo'], format='%Y-%m')
 
 # Streamlit layout
 st.set_page_config(layout='wide', page_title='Dashboard Financeiro 2024', page_icon=':bar_chart:')
@@ -33,21 +60,20 @@ Uma visão abrangente das finanças da empresa para o período de janeiro a sete
 
 # Metrics Section
 st.header('Principais Métricas Financeiras')
-total_vendas = faturamento_df['Vendas'].sum()
-total_compras = faturamento_df['Compras'].sum()
-total_folha = faturamento_df['Folha_Liquida'].sum()
-total_impostos = impostos_df['Valor_Pagar'].sum()
+total_vendas = df_faturamento['Vendas'].sum()
+total_compras = df_faturamento['Compras'].sum()
+total_folha = df_faturamento['Folha_Liquida'].sum()
+total_impostos = df_impostos['Valor_Pagar'].sum()
 
-# Format values to Brazilian Real manually
 col1, col2, col3, col4 = st.columns(4)
-col1.metric(label='Total Vendas (Jan-Set)', value=f"R$ {total_vendas:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-col2.metric(label='Total Compras (Jan-Set)', value=f"R$ {total_compras:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-col3.metric(label='Folha Líquida (Jan-Set)', value=f"R$ {total_folha:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-col4.metric(label='Total Impostos (Jan-Set)', value=f"R$ {total_impostos:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col1.metric(label='Total Vendas (Jan-Set)', value=formatar_moeda(total_vendas))
+col2.metric(label='Total Compras (Jan-Set)', value=formatar_moeda(total_compras))
+col3.metric(label='Folha Líquida (Jan-Set)', value=formatar_moeda(total_folha))
+col4.metric(label='Total Impostos (Jan-Set)', value=formatar_moeda(total_impostos))
 
 # Revenue vs Purchases Chart
 st.header('Vendas vs Compras (Mensal)')
-faturamento_monthly = faturamento_df.groupby(faturamento_df['Data'].dt.to_period('M')).agg({'Compras': 'sum', 'Vendas': 'sum'}).reset_index()
+faturamento_monthly = df_faturamento.groupby(df_faturamento['Data'].dt.to_period('M')).agg({'Compras': 'sum', 'Vendas': 'sum'}).reset_index()
 faturamento_monthly['Data'] = faturamento_monthly['Data'].dt.to_timestamp()
 
 # Map months to Portuguese manually
@@ -63,18 +89,18 @@ st.plotly_chart(fig1, use_container_width=True)
 
 # Tax Payments by Type
 st.header('Pagamentos de Impostos (Detalhado)')
-impostos_df_grouped['Periodo'] = impostos_df_grouped['Periodo'].apply(lambda x: f"{month_map[x.month]} de {x.year}")
-fig2 = px.bar(impostos_df_grouped, x='Periodo', y='Valor_Pagar', color='Historico', title='Pagamentos de Impostos por Tipo', labels={'Valor_Pagar': 'Valor (R$)'})
+df_impostos['Periodo'] = df_impostos['Periodo'].apply(lambda x: f"{month_map[x.month]} de {x.year}")
+fig2 = px.bar(df_impostos, x='Periodo', y='Valor_Pagar', color='Historico', title='Pagamentos de Impostos por Tipo', labels={'Valor_Pagar': 'Valor (R$)'})
 fig2.update_layout(barmode='stack', xaxis_title='Mês', yaxis_title='Total Pago (R$)')
 st.plotly_chart(fig2, use_container_width=True)
 
 # Detailed Tables (Optional Section)
 with st.expander('Ver Tabelas Detalhadas'):
     st.subheader('Dados de Faturamento')
-    faturamento_df['Data'] = faturamento_df['Data'].dt.strftime('%d/%m/%Y')
-    st.dataframe(faturamento_df.style.format({'Compras': 'R$ {:,.2f}', 'Vendas': 'R$ {:,.2f}', 'Folha_Liquida': 'R$ {:,.2f}', 'Compra_Ativo': 'R$ {:,.2f}', 'Mat_Uso_Consumo': 'R$ {:,.2f}'}))
+    df_faturamento['Data'] = df_faturamento['Data'].dt.strftime('%d/%m/%Y')
+    st.dataframe(df_faturamento.style.format({'Compras': 'R$ {:,.2f}', 'Vendas': 'R$ {:,.2f}', 'Folha_Liquida': 'R$ {:,.2f}'}))
     st.subheader('Dados de Impostos')
-    st.dataframe(impostos_df_grouped.style.format({'Total_Valor_Pagar': 'R$ {:,.2f}'}))
+    st.dataframe(df_impostos.style.format({'Valor_Pagar': 'R$ {:,.2f}'}))
 
 # Summary & Conclusion
 st.header('Resumo e Conclusão')
