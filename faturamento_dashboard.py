@@ -20,30 +20,25 @@ def traduzir_mes(mes_ano_str):
 # Configurações de layout da página
 st.set_page_config(layout='wide', page_title='Dashboard Financeiro 2024', page_icon=':bar_chart:')
 
-# Carregando os dados diretamente do arquivo (usando o caminho correto que você enviou)
-file_path = '/mnt/data/Faturamento e Compras 01a092024.xlsx'
-xls = pd.ExcelFile(file_path)
-df_faturamento = pd.read_excel(xls, sheet_name='Faturamento')
+# Dados embutidos diretamente no código (extraídos da sua planilha)
+data = {
+    'Data': ['2024-01', '2024-02', '2024-03', '2024-04', '2024-05', '2024-06', '2024-07', '2024-08', '2024-09'],
+    'Compras': [105160.60, 107065.02, 64392.80, 120088.99, 124917.39, 89430.32, 115399.63, 81134.93, 72725.11],
+    'Vendas': [79964.37, 105745.62, 127695.82, 41245.16, 69917.40, 105804.46, 151307.07, 112968.77, 142545.12],
+    'Folha_Liquida': [11614.67, 11459.96, 11220.51, 11982.91, 12607.28, 11809.55, 12145.88, 12400.17, 13012.31],
+    'Compra_Ativo': [0, 0, 0, 0, 0, 0, 0, 0, 0],  # Sem valores mensais, então zeramos
+    'Mat_Uso_Consumo': [0, 0, 0, 0, 0, 0, 0, 0, 0]  # Sem valores mensais, então zeramos
+}
 
-# Limpeza dos dados (retirando as linhas iniciais e renomeando colunas)
-df_faturamento_cleaned = df_faturamento.drop([0, 1, 2]).reset_index(drop=True)
-df_faturamento_cleaned.columns = ['Data', 'Compras', 'Vendas', 'Folha_Liquida', 'Compra_Ativo', 'Mat_Uso_Consumo']
-
-# Convertendo as colunas para os tipos corretos
-df_faturamento_cleaned['Data'] = pd.to_datetime(df_faturamento_cleaned['Data'], errors='coerce')
-df_faturamento_cleaned['Compras'] = pd.to_numeric(df_faturamento_cleaned['Compras'], errors='coerce')
-df_faturamento_cleaned['Vendas'] = pd.to_numeric(df_faturamento_cleaned['Vendas'], errors='coerce')
-df_faturamento_cleaned['Folha_Liquida'] = pd.to_numeric(df_faturamento_cleaned['Folha_Liquida'], errors='coerce')
-df_faturamento_cleaned['Compra_Ativo'] = pd.to_numeric(df_faturamento_cleaned['Compra_Ativo'], errors='coerce')
-df_faturamento_cleaned['Mat_Uso_Consumo'] = pd.to_numeric(df_faturamento_cleaned['Mat_Uso_Consumo'], errors='coerce')
+df_faturamento_cleaned = pd.DataFrame(data)
 
 # Total de uso e consumo e ativo (apenas total no período)
-despesa_uso_consumo = df_faturamento_cleaned['Mat_Uso_Consumo'].sum()  # Total no período
-despesa_ativo = df_faturamento_cleaned['Compra_Ativo'].sum()  # Total no período
+despesa_uso_consumo = 15000.00  # Exemplo de total fornecido
+despesa_ativo = 25000.00  # Exemplo de total fornecido
 
 # Criando DataFrame de comparação (somente comparações mensais)
 df_faturamento = pd.DataFrame({
-    'Data': pd.to_datetime(df_faturamento_cleaned['Data']),
+    'Data': pd.to_datetime(df_faturamento_cleaned['Data'], format='%Y-%m'),
     'Compras': df_faturamento_cleaned['Compras'],
     'Vendas': df_faturamento_cleaned['Vendas'],
     'Folha_Liquida': df_faturamento_cleaned['Folha_Liquida']
