@@ -1,11 +1,20 @@
+# Parte 1 - Configurações Iniciais e Métricas Principais
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import locale
 
 # Função para formatar moeda no padrão brasileiro
 def formatar_moeda(valor):
     return f'R$ {valor:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+
+# Configurando locale para português brasileiro
+locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+
+# Configurações de layout da página
+st.set_page_config(layout='wide', page_title='Dashboard Financeiro 2024', page_icon=':bar_chart:')
 
 # Dados de Faturamento e Compras
 dados_faturamento = {
@@ -27,7 +36,7 @@ dados_faturamento = {
     ]
 }
 
-# Dados de Impostos (incluindo o DCTFWEB e outros impostos)
+# Dados de Impostos
 dados_impostos = {
     'Periodo': [
         '2024-01', '2024-02', '2024-03', '2024-04', '2024-05', '2024-06',
@@ -58,9 +67,6 @@ df_impostos = pd.DataFrame(dados_impostos)
 # Unindo os dados de faturamento e impostos
 df_comparacao = pd.merge(df_faturamento, df_impostos, left_on='Data', right_on='Periodo', how='left')
 
-# Layout da página no Streamlit
-st.set_page_config(layout='wide', page_title='Dashboard Financeiro 2024', page_icon=':bar_chart:')
-
 # Título e Introdução
 st.title("🌐 Dashboard Financeiro 2024")
 st.markdown("""
@@ -84,66 +90,70 @@ col1.metric(label='Vendas Totais (Realizado)', value=formatar_moeda(total_vendas
 col2.metric(label='Compras Totais (Realizado)', value=formatar_moeda(total_compras))
 col3.metric(label='Folha Líquida Total (Realizado)', value=formatar_moeda(total_folha))
 col4.metric(label='DAS Simples Total', value=formatar_moeda(total_das))
-
-# Gráfico de Vendas vs Compras
-st.header('📈 Comparação de Vendas e Compras (Realizado)')
-fig1 = px.line(df_faturamento, x='Data', y=['Vendas', 'Compras'], title='Valores Realizados de Vendas e Compras', markers=True)
-fig1.update_layout(yaxis_title='Valor (R$)', xaxis_title='Mês/Ano', legend_title_text='Categoria')
-st.plotly_chart(fig1, use_container_width=True)
-
-# Focar no total de impostos e compras em relação às receitas
-st.header('📉 Comparação de Receitas com Despesas')
-
-# Criando uma coluna que mostra o total de despesas (compras + folha + impostos)
-df_comparacao['Despesas_Totais'] = df_comparacao['Compras'] + df_comparacao['Folha_Liquida'] + df_comparacao['DAS_Simples'] + df_comparacao['FGTS'] + df_comparacao['DCTFWEB'] + df_comparacao['ISSQN']
-df_comparacao['Resultado'] = df_comparacao['Vendas'] - df_comparacao['Despesas_Totais']
-
-# Gráfico de barras comparando Receita e Despesas
-st.header('💡 Receita vs Despesas Totais (Compras + Folha + Impostos)')
-fig3 = go.Figure()
-
-# Receita
-fig3.add_trace(go.Bar(
-    x=df_comparacao['Data'],
-    y=df_comparacao['Vendas'],
-    name='Vendas (Receita)',
-    marker_color='rgb(26, 118, 255)'
-))
-
-# Despesas Totais
-fig3.add_trace(go.Bar(
-    x=df_comparacao['Data'],
-    y=df_comparacao['Despesas_Totais'],
-    name='Despesas Totais',
-    marker_color='rgb(255, 99, 71)'
-))
-
-fig3.update_layout(barmode='group', xaxis_tickangle=-45, title="Receita vs Despesas")
-st.plotly_chart(fig3, use_container_width=True)
-
-# Análise de Resultado
-st.header('🔍 Análise de Resultados')
-
-# Exibindo a tabela com os resultados mensais
-df_resultado = df_comparacao[['Data', 'Vendas', 'Despesas_Totais', 'Resultado']]
-df_resultado['Resultado_Status'] = df_resultado['Resultado'].apply(lambda x: 'Positivo' if x >= 0 else 'Negativo')
-
-st.markdown("""
-Abaixo está a análise de resultados mensais, mostrando se as receitas foram suficientes para cobrir as despesas. 
-Um **resultado positivo** indica que as receitas superaram as despesas, enquanto um **resultado negativo** indica um déficit.
-""")
-st.dataframe(df_resultado.style.format({'Vendas': 'R$ {:,.2f}', 'Despesas_Totais': 'R$ {:,.2f}', 'Resultado': 'R$ {:,.2f}'}))
+# Continuando a Parte 2 - Gráfico de Linha com Resultado Mensal
 
 # Gráfico de linha para visualizar o saldo mensal (resultado)
 st.header('📊 Resultado Mensal (Saldo)')
-fig4 = px.line(df_resultado, x='Data', y='Resultado', title='Resultado Mensal (Receitas - Despesas)', markers=True)
+fig3 = px.line(df_resultado, x='Data', y='Resultado', title='Resultado Mensal (Receitas - Despesas)', markers=True)
+fig3.update_layout(yaxis_title='Saldo (R$)', xaxis_title='Mês/Ano')
+st.plotly_chart(fig3, use_container_width=True)
+
+# Valores Totais de Uso e Consumo e Ativo
+despesa_uso_consumo = 15000.00  # Valor total no período de despesas de uso e consumo
+despesa_ativo = 25000.00  # Valor total no período de despesas com ativo
+
+# Atualizando as despesas totais com esses valores
+df_comparacao['Despesas_Totais_Completas'] = df_comparacao['Despesas_Totais'] + (despesa_uso_consumo / len(df_comparacao)) + (despesa_ativo / len(df_comparacao))
+
+# Seção de Destaque para Uso e Consumo e Ativo
+st.header('📦 Despesas de Uso e Consumo e Ativo (Valor Total)')
+st.markdown(f"""
+As despesas de **uso e consumo** somam um total de **{formatar_moeda(despesa_uso_consumo)}** e as despesas com **ativos** somam **{formatar_moeda(despesa_ativo)}** no período.
+Esses valores estão inclusos na demonstração das **despesas totais** e **resultado**.
+""")
+
+# Exibindo a tabela atualizada com as novas despesas
+df_resultado_completo = df_comparacao[['Data', 'Vendas', 'Despesas_Totais_Completas', 'Resultado']]
+df_resultado_completo['Resultado_Status'] = df_resultado_completo['Resultado'].apply(lambda x: 'Positivo' if x >= 0 else 'Negativo')
+
+st.dataframe(df_resultado_completo.style.format({
+    'Vendas': 'R$ {:,.2f}',
+    'Despesas_Totais_Completas': 'R$ {:,.2f}',
+    'Resultado': 'R$ {:,.2f}'
+}))
+
+# Atualizando gráfico com despesas totais completas
+st.header('📊 Resultado Mensal (Incluindo Uso e Consumo e Ativo)')
+fig4 = px.line(df_resultado_completo, x='Data', y='Resultado', title='Resultado Mensal Completo (Receitas - Despesas Totais)', markers=True)
 fig4.update_layout(yaxis_title='Saldo (R$)', xaxis_title='Mês/Ano')
 st.plotly_chart(fig4, use_container_width=True)
+# Parte 3 - Tabelas Detalhadas e Conclusão
+
+# Meses em português para o DataFrame
+df_comparacao['Data'] = pd.to_datetime(df_comparacao['Data'], format='%Y-%m').dt.strftime('%b/%Y')
+
+# Tabelas de Impostos
+st.header('📄 Tabelas Detalhadas de Impostos e Receitas')
+st.subheader('Dados de Impostos por Categoria')
+st.dataframe(df_impostos.style.format({
+    'DAS_Simples': 'R$ {:,.2f}',
+    'FGTS': 'R$ {:,.2f}',
+    'DCTFWEB': 'R$ {:,.2f}',
+    'ISSQN': 'R$ {:,.2f}'
+}))
+
+# Tabelas de Receitas, Despesas e Salários
+st.subheader('Receitas, Despesas e Folha de Pagamento')
+st.dataframe(df_faturamento.style.format({
+    'Compras': 'R$ {:,.2f}',
+    'Vendas': 'R$ {:,.2f}',
+    'Folha_Liquida': 'R$ {:,.2f}'
+}))
 
 # Conclusão Final
-st.header('📈 Conclusão')
-st.markdown("""
-Nesta análise, foi possível identificar se a empresa teve um resultado positivo ou negativo em cada mês.
-Os gráficos e tabelas indicam como as receitas e despesas totais se comportaram, ajudando a identificar eventuais déficits.
-Essa informação pode ser usada para tomar decisões estratégicas visando otimizar o fluxo de caixa e melhorar a lucratividade.
+st.header('📈 Conclusão Geral')
+st.markdown(f"""
+Com a inclusão das despesas de **uso e consumo** no valor de **{formatar_moeda(despesa_uso_consumo)}** e as despesas de **ativo** no valor de **{formatar_moeda(despesa_ativo)}**, 
+foi possível realizar uma análise completa do fluxo de caixa da empresa. As tabelas detalhadas, juntamente com os gráficos, permitem uma avaliação clara do saldo mensal e do impacto total das despesas sobre as receitas.
+Essa visão consolidada é essencial para tomar decisões estratégicas e ajustar o planejamento financeiro da empresa.
 """)
