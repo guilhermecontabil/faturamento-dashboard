@@ -1,17 +1,21 @@
-# Parte 1 - Configurações Iniciais e Métricas Principais
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import locale
 
 # Função para formatar moeda no padrão brasileiro
 def formatar_moeda(valor):
     return f'R$ {valor:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
 
-# Configurando locale para português brasileiro
-locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+# Função para traduzir os meses para português manualmente
+def traduzir_mes(mes_ano_str):
+    meses_traducao = {
+        'Jan': 'Jan', 'Feb': 'Fev', 'Mar': 'Mar', 'Apr': 'Abr', 'May': 'Mai', 'Jun': 'Jun',
+        'Jul': 'Jul', 'Aug': 'Ago', 'Sep': 'Set', 'Oct': 'Out', 'Nov': 'Nov', 'Dec': 'Dez'
+    }
+    mes_abrev = mes_ano_str[:3]  # Pegando a abreviação do mês
+    ano = mes_ano_str[4:]  # Pegando o ano
+    return f"{meses_traducao.get(mes_abrev, mes_abrev)}/{ano}"
 
 # Configurações de layout da página
 st.set_page_config(layout='wide', page_title='Dashboard Financeiro 2024', page_icon=':bar_chart:')
@@ -90,7 +94,53 @@ col1.metric(label='Vendas Totais (Realizado)', value=formatar_moeda(total_vendas
 col2.metric(label='Compras Totais (Realizado)', value=formatar_moeda(total_compras))
 col3.metric(label='Folha Líquida Total (Realizado)', value=formatar_moeda(total_folha))
 col4.metric(label='DAS Simples Total', value=formatar_moeda(total_das))
-# Continuando a Parte 2 - Gráfico de Linha com Resultado Mensal
+
+# Gráfico de Vendas vs Compras
+st.header('📈 Comparação de Vendas e Compras (Realizado)')
+fig1 = px.line(df_faturamento, x='Data', y=['Vendas', 'Compras'], title='Valores Realizados de Vendas e Compras', markers=True)
+fig1.update_layout(yaxis_title='Valor (R$)', xaxis_title='Mês/Ano', legend_title_text='Categoria')
+st.plotly_chart(fig1, use_container_width=True)
+
+# Foco no total de impostos e compras em relação às receitas
+st.header('📉 Comparação de Receitas com Despesas')
+
+# Criando uma coluna que mostra o total de despesas (compras + folha + impostos)
+df_comparacao['Despesas_Totais'] = df_comparacao['Compras'] + df_comparacao['Folha_Liquida'] + df_comparacao['DAS_Simples'] + df_comparacao['FGTS'] + df_comparacao['DCTFWEB'] + df_comparacao['ISSQN']
+df_comparacao['Resultado'] = df_comparacao['Vendas'] - df_comparacao['Despesas_Totais']
+
+# Gráfico de barras comparando Receita e Despesas
+st.header('💡 Receita vs Despesas Totais (Compras + Folha + Impostos)')
+fig2 = go.Figure()
+
+# Receita
+fig2.add_trace(go.Bar(
+    x=df_comparacao['Data'],
+    y=df_comparacao['Vendas'],
+    name='Vendas (Receita)',
+    marker_color='rgb(26, 118, 255)'
+))
+
+# Despesas Totais
+fig2.add_trace(go.Bar(
+    x=df_comparacao['Data'],
+    y=df_comparacao['Despesas_Totais'],
+    name='Despesas Totais',
+    marker_color='rgb(255, 99, 71)'
+))
+
+fig2.update_layout(barmode='group', xaxis_tickangle=-45, title="Receita vs Despesas")
+st.plotly_chart(fig2, use_container_width=True)
+
+# Tabela de Resultados
+st.header('🔍 Análise de Resultados')
+df_resultado = df_comparacao[['Data', 'Vendas', 'Despesas_Totais', 'Resultado']]
+df_resultado['Resultado_Status'] = df_resultado['Resultado'].apply(lambda x: 'Positivo' if x >= 0 else 'Negativo')
+
+st.markdown("""
+Abaixo está a análise de resultados mensais, mostrando se as receitas foram suficientes para cobrir as despesas.
+Um **resultado positivo** indica que as receitas superaram as despesas, enquanto um **resultado negativo** indica um déficit.
+""")
+st.dataframe(df_resultado.style.format({'Vendas': 'R$ {:,.2f}', 'Despesas_Totais': 'R$ {:,.2f}', 'Resultado': 'R$ {:,.2f}'}))
 
 # Gráfico de linha para visualizar o saldo mensal (resultado)
 st.header('📊 Resultado Mensal (Saldo)')
@@ -127,10 +177,10 @@ st.header('📊 Resultado Mensal (Incluindo Uso e Consumo e Ativo)')
 fig4 = px.line(df_resultado_completo, x='Data', y='Resultado', title='Resultado Mensal Completo (Receitas - Despesas Totais)', markers=True)
 fig4.update_layout(yaxis_title='Saldo (R$)', xaxis_title='Mês/Ano')
 st.plotly_chart(fig4, use_container_width=True)
-# Parte 3 - Tabelas Detalhadas e Conclusão
 
-# Meses em português para o DataFrame
+# Aplicando a função de tradução de meses para português
 df_comparacao['Data'] = pd.to_datetime(df_comparacao['Data'], format='%Y-%m').dt.strftime('%b/%Y')
+df_comparacao['Data'] = df_comparacao['Data'].apply(traduzir_mes)
 
 # Tabelas de Impostos
 st.header('📄 Tabelas Detalhadas de Impostos e Receitas')
