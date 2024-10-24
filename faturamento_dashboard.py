@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from datetime import datetime
 
 # Função para formatar moeda no padrão brasileiro
 def formatar_moeda(valor):
@@ -79,25 +80,42 @@ st.markdown("""
 
 # Seção 5: Análise de Desempenho
 st.header('Análise de Desempenho')
+
+# Gráfico de Pizza para Comparar Compras e Vendas Totais
 total_compras = df['Compras'].sum()
 total_vendas = df['Vendas'].sum()
 
-# Formatando os valores como moeda brasileira
-total_compras_formatado = formatar_moeda(total_compras)
-total_vendas_formatado = formatar_moeda(total_vendas)
+fig_pizza = px.pie(
+    names=['Compras', 'Vendas'],
+    values=[total_compras, total_vendas],
+    title='Proporção de Compras vs Vendas Totais',
+    color_discrete_sequence=['silver', 'green']
+)
+st.plotly_chart(fig_pizza)
 
-st.metric("Total de Compras", total_compras_formatado)
-st.metric("Total de Vendas", total_vendas_formatado)
+# Gráfico de Linhas para Compras e Vendas Acumuladas ao Longo do Tempo
+df['Compras_Acumuladas'] = df['Compras'].cumsum()
+df['Vendas_Acumuladas'] = df['Vendas'].cumsum()
 
-if total_vendas > total_compras:
-    st.success("Parabéns! O total de vendas é maior do que o total de compras.")
-else:
-    st.warning("Atenção: As vendas são menores que as compras.")
+fig_acumulado = px.line(
+    df, 
+    x='Data_Exibicao', 
+    y=['Compras_Acumuladas', 'Vendas_Acumuladas'], 
+    title='Compras e Vendas Acumuladas ao Longo do Tempo', 
+    markers=True, 
+    color_discrete_sequence=['silver', 'green']
+)
+fig_acumulado.update_layout(yaxis_title='Valores Acumulados (R$)')
+st.plotly_chart(fig_acumulado)
 
 # Seção 6: Adicionar Filtro por Data (Opcional)
 st.header('Filtrar por Data')
 start_date = st.date_input('Data Inicial', df['Data'].min())
 end_date = st.date_input('Data Final', df['Data'].max())
+
+# Converter start_date e end_date para datetime compatível com o DataFrame
+start_date = pd.to_datetime(start_date)
+end_date = pd.to_datetime(end_date)
 
 if start_date <= end_date:
     filtered_df = df[(df['Data'] >= start_date) & (df['Data'] <= end_date)]
