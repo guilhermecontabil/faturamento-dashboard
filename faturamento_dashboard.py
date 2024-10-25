@@ -33,29 +33,42 @@ st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
 st.title("Dashboard Financeiro")
 st.markdown("### Visão Geral das Receitas, Despesas e Lucros")
 
-# Resumo Geral no topo (como cartões)
-receita_total = fin_data['Vendas'].sum()
-despesas_totais = fin_data['Despesas Totais'].sum()
-lucro_prejuizo_total = receita_total - despesas_totais
+# Resumo Geral no topo usando cards estilizados
+with st.container():
+    st.markdown("#### Resumo Financeiro Geral")
+    st.markdown(
+        "<style>"
+        "div[data-testid='metric-container'] {"
+        "    background-color: #f0f2f6;"
+        "    border: 1px solid #e1e1e1;"
+        "    padding: 10px;"
+        "    border-radius: 10px;"
+        "    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);"
+        "    margin-bottom: 10px;"
+        "}"
+        "div[data-testid='metric-container'] > div {"
+        "    overflow-wrap: break-word;"
+        "    font-family: 'Arial', sans-serif;"
+        "    font-weight: bold;"
+        "}"
+        "</style>",
+        unsafe_allow_html=True
+    )
 
-col1, col2, col3 = st.columns(3)
-col1.metric(label="Receita Total", value=f"R$ {receita_total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-col2.metric(label="Despesas Totais", value=f"R$ {despesas_totais:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-col3.metric(label="Lucro/Prejuízo Total", value=f"R$ {lucro_prejuizo_total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col1, col2, col3 = st.columns(3, gap="large")
+    col1.metric(label="Receita Total", value=f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col2.metric(label="Despesas Totais", value=f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col3.metric(label="Lucro/Prejuízo Total", value=f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
-# Cartões adicionais para Vendas, Compras, Salários, DAS e DCTFWeb
-total_vendas = fin_data['Vendas'].sum()
-total_compras = fin_data['COMPRAS'].sum()
-total_salarios = fin_data['FOLHA LIQUIDA'].sum()
-total_das = fin_data['DAS'].sum()
-total_dctfweb = fin_data['Darf DctfWeb'].sum()
-
-col4, col5, col6, col7, col8 = st.columns(5)
-col4.metric(label="Total Vendas", value=f"R$ {total_vendas:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-col5.metric(label="Total Compras", value=f"R$ {total_compras:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-col6.metric(label="Total Salários", value=f"R$ {total_salarios:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-col7.metric(label="Total DAS", value=f"R$ {total_das:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-col8.metric(label="Total DCTFWeb", value=f"R$ {total_dctfweb:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+# Cartões adicionais para Vendas, Compras, Salários, DAS e DCTFWeb usando container
+with st.container():
+    st.markdown("#### Indicadores Detalhados")
+    col4, col5, col6, col7, col8 = st.columns(5, gap="large")
+    col4.metric(label="Total Vendas", value=f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col5.metric(label="Total Compras", value=f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col6.metric(label="Total Salários", value=f"R$ {fin_data['FOLHA LIQUIDA'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col7.metric(label="Total DAS", value=f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col8.metric(label="Total DCTFWeb", value=f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
 # Receita x Compras
 grafico_receita_compras = px.line(
@@ -104,11 +117,27 @@ st.plotly_chart(grafico_lucro_prejuizo, use_container_width=True)
 
 # Tabela Interativa para Consulta
 st.markdown("### Tabela Interativa para Consulta de Dados Financeiros")
-# Formatando os valores monetários para Real Brasileiro (R$)
+# Adicionando linha de totalização na tabela
 fin_data_display = fin_data.copy()
 colunas_monetarias = ['Darf DctfWeb', 'DAS', 'FGTS', 'Contribuição Assistencial', 'ISSQN Retido', 'COMPRAS', 'Vendas', 'FOLHA LIQUIDA', 'Despesas Totais', 'Lucro/Prejuízo']
 for coluna in colunas_monetarias:
     fin_data_display[coluna] = fin_data_display[coluna].apply(lambda x: f"R$ {x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+
+# Adicionando uma linha de totais na tabela
+totais = {
+    'Período': 'Totais',
+    'Darf DctfWeb': f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'DAS': f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'FGTS': f"R$ {fin_data['FGTS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'Contribuição Assistencial': f"R$ {fin_data['Contribuição Assistencial'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'ISSQN Retido': f"R$ {fin_data['ISSQN Retido'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'COMPRAS': f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'Vendas': f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'FOLHA LIQUIDA': f"R$ {fin_data['FOLHA LIQUIDA'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'Despesas Totais': f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'Lucro/Prejuízo': f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+}
+fin_data_display = fin_data_display.append(totais, ignore_index=True)
 
 st.dataframe(fin_data_display)
 
