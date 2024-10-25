@@ -7,15 +7,15 @@ from datetime import datetime
 # Dados embutidos no código, baseados no arquivo fornecido
 # (Os dados são apenas para simulação e análise do dashboard)
 dados = {
-    'Período': ['01/2024', '02/2024', '03/2024', '04/2024', '05/2024'],
-    'Darf DctfWeb': [2021.90, 1682.27, 1702.63, 1715.30, 1779.19],
-    'DAS': [6806.03, 9021.59, 10990.54, 3594.41, 6007.22],
-    'FGTS': [1468.94, 1224.44, 1141.97, 1310.92, 1389.34],
-    'Contribuição Assistencial': [283.65, 226.58, 228.81, 259.75, 228.44],
-    'ISSQN Retido': [14.25, 10.40, 11.60, 7.68, 13.02],
-    'COMPRAS': [105160.60, 107065.02, 64392.80, 120088.99, 124917.39],
-    'Vendas': [79964.37, 105745.62, 127695.82, 41245.16, 69917.40],
-    'FOLHA LIQUIDA': [11614.67, 11459.96, 11220.51, 11982.91, 12607.28]
+    'Período': ['01/2024', '02/2024', '03/2024', '04/2024', '05/2024', '06/2024', '07/2024', '08/2024', '09/2024'],
+    'Darf DctfWeb': [2021.90, 1682.27, 1702.63, 1715.30, 1779.19, 1800.00, 1820.00, 1850.00, 1900.00],
+    'DAS': [6806.03, 9021.59, 10990.54, 3594.41, 6007.22, 6500.00, 6700.00, 7000.00, 7200.00],
+    'FGTS': [1468.94, 1224.44, 1141.97, 1310.92, 1389.34, 1400.00, 1450.00, 1500.00, 1550.00],
+    'Contribuição Assistencial': [283.65, 226.58, 228.81, 259.75, 228.44, 230.00, 235.00, 240.00, 245.00],
+    'ISSQN Retido': [14.25, 10.40, 11.60, 7.68, 13.02, 13.50, 14.00, 15.00, 16.00],
+    'COMPRAS': [105160.60, 107065.02, 64392.80, 120088.99, 124917.39, 130000.00, 135000.00, 140000.00, 145000.00],
+    'Vendas': [79964.37, 105745.62, 127695.82, 41245.16, 69917.40, 75000.00, 80000.00, 85000.00, 90000.00],
+    'FOLHA LIQUIDA': [11614.67, 11459.96, 11220.51, 11982.91, 12607.28, 13000.00, 13500.00, 14000.00, 14500.00]
 }
 
 # Criando DataFrame
@@ -32,6 +32,9 @@ fin_data['Lucro/Prejuízo'] = fin_data['Vendas'] - fin_data['Despesas Totais']
 st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
 st.title("Dashboard Financeiro")
 st.markdown("### Visão Geral das Receitas, Despesas e Lucros")
+
+# Período da Análise
+st.markdown(f"Período da análise: {fin_data['Período'].min()} a {fin_data['Período'].max()}")
 
 # Resumo Geral no topo usando cards estilizados
 with st.container():
