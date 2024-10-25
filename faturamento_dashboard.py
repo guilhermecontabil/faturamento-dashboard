@@ -29,61 +29,65 @@ fin_data['Lucro/Prejuízo'] = fin_data['Vendas'] - fin_data['Despesas Totais']
 # Configurando a página do Streamlit
 st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
 
-# Estilo customizado para o fundo da página e estilo neon com gradiente
-page_bg_img = '''
+# Estilo customizado
+st.markdown('''
 <style>
 body {
     background: linear-gradient(135deg, #0f0e17, #1f1d36);
     color: #ffffff;
 }
+h1, h3, h4, h2 {
+    text-align: center;
+    color: #a7f3d0;
+}
 </style>
-'''
-st.markdown(page_bg_img, unsafe_allow_html=True)
+''', unsafe_allow_html=True)
+
+# Função para criar um cartão métrico personalizado
+def metric_card(title, value, background, text_color):
+    st.markdown(f'''
+    <div style="
+        background: {background};
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        color: {text_color};
+        margin-bottom: 15px;
+        box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
+    ">
+        <h3>{title}</h3>
+        <p style="font-size: 24px; font-weight: bold;">{value}</p>
+    </div>
+    ''', unsafe_allow_html=True)
 
 # Título do dashboard
-st.markdown("<h1 style='text-align: center; color: #a7f3d0;'>Dashboard Financeiro </h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #ff8a65;'>Visão Geral das Receitas, Despesas e Lucros</h3>", unsafe_allow_html=True)
+st.markdown("# Dashboard Financeiro")
+st.markdown("### Visão Geral das Receitas, Despesas e Lucros")
+st.markdown(f"#### Período da análise: {fin_data['Período'].min()} a {fin_data['Período'].max()}")
 
-# Período da Análise
-st.markdown(f"<h4 style='text-align: center; color: #f4d06f;'>Período da análise: {fin_data['Período'].min()} a {fin_data['Período'].max()}</h4>", unsafe_allow_html=True)
-
-# Resumo Geral no topo usando cards estilizados com gradientes neon
-with st.container():
-    st.markdown("#### Resumo Financeiro Geral")
-    st.markdown(
-        "<style>"
-        "div[data-testid='metric-container'] {"
-        "    background: linear-gradient(135deg, #ff4b5c, #ff8a65);"
-        "    border: 1px solid #ff8a65;"
-        "    padding: 15px;"
-        "    border-radius: 15px;"
-        "    box-shadow: 0px 0px 20px #ff8a65;"
-        "    margin-bottom: 15px;"
-        "    color: white;"
-        "}"
-        "div[data-testid='metric-container'] > div {"
-        "    overflow-wrap: break-word;"
-        "    font-family: 'Arial', sans-serif;"
-        "    font-weight: bold;"
-        "}"
-        "</style>",
-        unsafe_allow_html=True
-    )
-
-    col1, col2, col3 = st.columns(3, gap="large")
-    col1.metric(label="💰 Receita Total", value=f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col2.metric(label="💸 Despesas Totais", value=f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col3.metric(label="📊 Lucro/Prejuízo Total", value=f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+# Resumo Geral no topo usando cartões personalizados
+st.markdown("#### Resumo Financeiro Geral")
+col1, col2, col3 = st.columns(3)
+with col1:
+    metric_card("💰 Receita Total", f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #ff4b5c, #ff8a65)", text_color="white")
+with col2:
+    metric_card("💸 Despesas Totais", f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #13c4a3, #1f1d36)", text_color="white")
+with col3:
+    metric_card("📊 Lucro/Prejuízo Total", f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #a7f3d0, #ff8a65)", text_color="white")
 
 # Indicadores Detalhados em Seção Separada e Estilizada com tema Neon
 st.markdown("#### Indicadores Detalhados")
-with st.container():
-    col4, col5, col6, col7, col8 = st.columns(5, gap="large")
-    col4.metric(label="📈 Total Vendas", value=f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col5.metric(label="🛒 Total Compras", value=f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col6.metric(label="👥 Total Salários", value=f"R$ {fin_data['Folha_Liquida'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col7.metric(label="💵 Total DAS", value=f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col8.metric(label="📑 Total DCTFWeb", value=f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col4, col5, col6, col7, col8 = st.columns(5)
+with col4:
+    metric_card("📈 Total Vendas", f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #1f1d36, #ff8a65)", text_color="white")
+with col5:
+    metric_card("🛒 Total Compras", f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #ff8a65, #13c4a3)", text_color="white")
+with col6:
+    metric_card("👥 Total Salários", f"R$ {fin_data['Folha_Liquida'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #13c4a3, #1f1d36)", text_color="white")
+with col7:
+    metric_card("💵 Total DAS", f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #a7f3d0, #ff8a65)", text_color="white")
+with col8:
+    metric_card("📑 Total DCTFWeb", f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #ff4b5c, #ff8a65)", text_color="white")
 
 # Receita x Compras com estilo Neon
 grafico_receita_compras = go.Figure()
@@ -189,10 +193,47 @@ st.dataframe(fin_data_display)
 # Outras Despesas Não Registradas na Planilha
 st.markdown("### Outras Despesas Não Registradas na Planilha")
 st.markdown("Essas despesas não estão incluídas nas demonstrações acima.")
-st.markdown("- COMPRA ATIVO: R$ 78.390,94")
-st.markdown("- MAT USO CONSUMO: R$ 31.785,62")
+st.markdown("- **COMPRA ATIVO**: R$ 78.390,94")
+st.markdown("- **MAT USO CONSUMO**: R$ 31.785,62")
 
 # Comentário final
 st.markdown(
     "<div style='text-align: center; font-size: 24px; color: #a7f3d0;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
 )
+
+# Adicionando os comentários fornecidos
+st.markdown("---")  # Linha separadora
+st.markdown("## Resumo do Desempenho Financeiro")
+
+st.markdown("""
+Gostaria de compartilhar um resumo do desempenho financeiro da empresa de janeiro a setembro de 2024, focando em alguns pontos importantes sobre as **compras**, **folha de pagamento**, **vendas** e os **impostos pagos**.
+
+### Compras e Folha de Pagamento
+
+As **compras** têm se mantido estáveis, com uma média mensal de **R$ 97.028,76**. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações inesperadas. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
+
+Em relação à **folha de pagamento**, a média mensal foi de **R$ 11.805,60**, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
+
+### Vendas e Impostos (DAS)
+
+O total de **vendas** realizadas no período foi de **R$ 989.194,79**, com uma média mensal de **R$ 109.910,53**. Comparando com o valor de **DAS** pago, que somou **R$ 70.308,71** durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
+
+### Total de Despesas e Custos vs Receita
+
+Ao observarmos o total de **despesas**, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a **R$ 1.141.244,26**. Com uma receita total de **R$ 937.193,79**, a empresa apresenta um **saldo negativo de R$ 204.050,47**, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
+
+Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter o controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para que possamos garantir essa sustentabilidade financeira ao longo do ano.
+""")
+
+# Ajuste final de estilo para os comentários
+st.markdown('''
+<style>
+h2, h3, h4 {
+    color: #ff8a65;
+}
+p {
+    font-size: 16px;
+    line-height: 1.6;
+}
+</style>
+''', unsafe_allow_html=True)
