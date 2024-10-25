@@ -115,16 +115,16 @@ grafico_receita_compras.update_layout(
 
 st.plotly_chart(grafico_receita_compras, use_container_width=True)
 
-# Receita x Impostos
-grafico_receita_impostos = px.bar(
-    fin_data, x='Período', y=['Vendas', 'Darf DctfWeb', 'DAS', 'FGTS', 'Contribuicao_Assistencial', 'ISSQN Retido'],
+# Receita x Imposto DAS
+grafico_receita_das = px.bar(
+    fin_data, x='Período', y=['Vendas', 'DAS'],
     barmode='group',
     labels={"value": "Valores em R$", "Período": "Mês/Ano"},
-    title="Receitas vs Impostos Pagos",
-    color_discrete_sequence=px.colors.qualitative.Bold
+    title="Receitas vs DAS (Imposto)",
+    color_discrete_sequence=['#f4d06f', '#13c4a3']
 )
-grafico_receita_impostos.update_layout(template="plotly_dark", title_font_size=20)
-st.plotly_chart(grafico_receita_impostos, use_container_width=True)
+grafico_receita_das.update_layout(template="plotly_dark", title_font_size=20)
+st.plotly_chart(grafico_receita_das, use_container_width=True)
 
 # Receita Total vs Despesas Totais
 grafico_receita_despesas = go.Figure()
@@ -192,14 +192,7 @@ st.markdown("Essas despesas não estão incluídas nas demonstrações acima.")
 st.markdown("- COMPRA ATIVO: R$ 78.390,94")
 st.markdown("- MAT USO CONSUMO: R$ 31.785,62")
 
-# Resumo Final da Dashboard
-st.markdown("""
-<div style='text-align: center; font-size: 24px; color: #f72585;'>
-    Principais pontos sobre a Dashboard: um resumo do desempenho financeiro da empresa de janeiro a setembro de 2024, focando em alguns pontos importantes sobre as compras, folha de pagamento, vendas e os impostos pagos.
-    <ul style='text-align: left; color: #a7f3d0;'>
-        <li><strong>Compras e Folha de Pagamento:</strong> As compras têm se mantido estáveis, com uma média mensal de R$ 97.028,76. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações inesperadas. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários. Em relação à folha de pagamento, a média mensal foi de R$ 11.805,60, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.</li>
-        <li><strong>Vendas e Impostos (DAS):</strong> O total de vendas realizadas no período foi de R$ 989.194,79, com uma média mensal de R$ 109.910,53. Comparando com o valor de DAS pago, que somou R$ 70.308,71 durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.</li>
-        <li><strong>Total de Despesas e Custos vs Receita:</strong> Ao observarmos o total de despesas, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a R$ 1.141.244,26. Com uma receita total de R$ 937.193,79, a empresa apresenta um saldo negativo de R$ 204.050,47, indicando que, até o momento, as receitas não foram suficientes para cobrir os custos e as despesas. Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter o controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para que possamos garantir essa sustentabilidade financeira ao longo do ano.</li>
-    </ul>
-</div>
-""", unsafe_allow_html=True)
+# Comentário final
+st.markdown(
+    "<div style='text-align: center; font-size: 24px; color: #a7f3d0;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
+)
