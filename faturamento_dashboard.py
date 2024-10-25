@@ -28,24 +28,39 @@ fin_data['Lucro/Prejuízo'] = fin_data['Vendas'] - fin_data['Despesas Totais']
 
 # Configurando a página do Streamlit
 st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
+
+# Estilo customizado para o fundo da página
+page_bg_img = '''
+<style>
+body {
+    background-image: url("https://images.unsplash.com/photo-1523289333742-be1242760429");
+    background-size: cover;
+    color: white;
+}
+</style>
+'''
+st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# Título do dashboard
 st.title("Dashboard Financeiro")
 st.markdown("### Visão Geral das Receitas, Despesas e Lucros")
 
 # Período da Análise
 st.markdown(f"Período da análise: {fin_data['Período'].min()} a {fin_data['Período'].max()}")
 
-# Resumo Geral no topo usando cards estilizados
+# Resumo Geral no topo usando cards estilizados com gradientes e ícones
 with st.container():
     st.markdown("#### Resumo Financeiro Geral")
     st.markdown(
         "<style>"
         "div[data-testid='metric-container'] {"
-        "    background-color: #f0f2f6;"
+        "    background: linear-gradient(135deg, #42a5f5, #478ed1);"
         "    border: 1px solid #e1e1e1;"
-        "    padding: 10px;"
-        "    border-radius: 10px;"
-        "    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);"
-        "    margin-bottom: 10px;"
+        "    padding: 15px;"
+        "    border-radius: 15px;"
+        "    box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.2);"
+        "    margin-bottom: 15px;"
+        "    color: white;"
         "}"
         "div[data-testid='metric-container'] > div {"
         "    overflow-wrap: break-word;"
@@ -57,19 +72,19 @@ with st.container():
     )
 
     col1, col2, col3 = st.columns(3, gap="large")
-    col1.metric(label="Receita Total", value=f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col2.metric(label="Despesas Totais", value=f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col3.metric(label="Lucro/Prejuízo Total", value=f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col1.metric(label="💰 Receita Total", value=f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col2.metric(label="💸 Despesas Totais", value=f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col3.metric(label="📊 Lucro/Prejuízo Total", value=f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
 # Indicadores Detalhados em Seção Separada e Estilizada
 st.markdown("#### Indicadores Detalhados")
 with st.container():
     col4, col5, col6, col7, col8 = st.columns(5, gap="large")
-    col4.metric(label="Total Vendas", value=f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col5.metric(label="Total Compras", value=f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col6.metric(label="Total Salários", value=f"R$ {fin_data['Folha_Liquida'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col7.metric(label="Total DAS", value=f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col8.metric(label="Total DCTFWeb", value=f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col4.metric(label="📈 Total Vendas", value=f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col5.metric(label="🛒 Total Compras", value=f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col6.metric(label="👥 Total Salários", value=f"R$ {fin_data['Folha_Liquida'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col7.metric(label="💵 Total DAS", value=f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    col8.metric(label="📑 Total DCTFWeb", value=f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
 # Receita x Compras
 grafico_receita_compras = px.line(
