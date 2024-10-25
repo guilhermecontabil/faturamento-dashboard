@@ -43,7 +43,7 @@ despesa_ativo = df_faturamento['Compra_Ativo'].sum()  # Total no período
 df_faturamento['Despesas_Totais'] = df_faturamento['Compras'] + df_faturamento['Folha_Liquida']
 
 # Adicionando valores de impostos ao DataFrame de faturamento
-df_impostos_mes = df_impostos.groupby(df_impostos['Periodo'].dt.to_period('M')).sum().reset_index()
+df_impostos_mes = df_impostos.groupby(df_impostos['Periodo'].dt.to_period('M'))['Valor_Pagar'].sum().reset_index()
 df_impostos_mes['Periodo'] = df_impostos_mes['Periodo'].dt.strftime('%m/%Y')
 df_faturamento['Data_Mes'] = df_faturamento['Data'].dt.to_period('M').dt.strftime('%m/%Y')
 
@@ -105,7 +105,7 @@ st.plotly_chart(fig2, use_container_width=True)
 
 # Gráfico comparando Receita vs DAS
 st.header('\U0001F4B8 Comparativo Receita vs DAS')
-df_das = df_impostos[df_impostos['Historico'].str.contains('DAS', case=False)].groupby(df_impostos['Periodo'].dt.to_period('M')).sum().reset_index()
+df_das = df_impostos[df_impostos['Historico'].str.contains('DAS', case=False)].groupby(df_impostos['Periodo'].dt.to_period('M'))['Valor_Pagar'].sum().reset_index()
 df_das['Periodo'] = df_das['Periodo'].dt.strftime('%m/%Y')
 df_faturamento = df_faturamento.merge(df_das[['Periodo', 'Valor_Pagar']], how='left', left_on='Data_Mes', right_on='Periodo', suffixes=('', '_DAS'))
 df_faturamento['Valor_Pagar_DAS'].fillna(0, inplace=True)
