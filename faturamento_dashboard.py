@@ -3,7 +3,7 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 
-# Dados fornecidos pelo arquivo Excel atualizado (de Janeiro/2024 a Setembro/2024)
+# Dados fornecidos (de Janeiro/2024 a Setembro/2024)
 dados = {
     'Período': ['01/2024', '02/2024', '03/2024', '04/2024', '05/2024', '06/2024', '07/2024', '08/2024', '09/2024'],
     'Darf DctfWeb': [2021.90, 1682.27, 1702.63, 1715.30, 1779.19, 1934.75, 2436.78, 2586.50, 2676.25],
@@ -30,33 +30,33 @@ fin_data['Lucro/Prejuízo'] = fin_data['Vendas'] - fin_data['Despesas Totais']
 # Configurando a página do Streamlit
 st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
 
-# Estilo customizado com as cores fornecidas
+# Estilo customizado
 st.markdown('''
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
-
 body, .stApp {
     background-color: #4A5658;
     color: #ffffff;
     font-family: 'Ubuntu', sans-serif;
 }
-
 h1, h2, h3, h4 {
     text-align: center;
     color: #A8AFB0;
 }
-
 .metric-card {
     background: linear-gradient(135deg, #757575, #C5C5C5);
     color: #000000;
 }
-
 </style>
 ''', unsafe_allow_html=True)
 
 # Função para formatar valores monetários
 def format_currency(value):
-    return f"R$ {value:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    is_negative = value < 0
+    value = abs(value)
+    formatted = f"R$ {value:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    if is_negative:
+        formatted = f"({formatted})"
+    return formatted
 
 # Função para criar um cartão métrico personalizado
 def metric_card(title, value):
@@ -103,9 +103,9 @@ with col8:
     metric_card("📑 Total DCTFWeb", format_currency(fin_data['Darf DctfWeb'].sum()))
 
 # Gráficos
-# Definindo cores para os gráficos
+# Definindo cores mais atraentes para os gráficos
 grafico_tema = 'plotly_dark'
-cores_graficos = ['#A8AFB0', '#C5C5C5', '#757575', '#4A5658']
+cores_graficos = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
 
 # Receita x Compras
 grafico_receita_compras = go.Figure()
@@ -215,26 +215,45 @@ st.markdown(
     "<div style='text-align: center; font-size: 24px; color: #A8AFB0;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
 )
 
+# Cálculos para os comentários finais
+num_meses = len(fin_data)
+media_compras = fin_data['COMPRAS'].mean()
+media_folha = fin_data['Folha_Liquida'].mean()
+total_vendas = fin_data['Vendas'].sum()
+media_vendas = fin_data['Vendas'].mean()
+total_das = fin_data['DAS'].sum()
+total_despesas = fin_data['Despesas Totais'].sum()
+saldo_negativo = total_vendas - total_despesas
+
+# Formatação dos valores
+media_compras_formatted = format_currency(media_compras)
+media_folha_formatted = format_currency(media_folha)
+total_vendas_formatted = format_currency(total_vendas)
+media_vendas_formatted = format_currency(media_vendas)
+total_das_formatted = format_currency(total_das)
+total_despesas_formatted = format_currency(total_despesas)
+saldo_negativo_formatted = format_currency(saldo_negativo)
+
 # Adicionando os comentários finais
 st.markdown("---")  # Linha separadora
 st.markdown("## Comentários Finais do Desempenho Financeiro")
 
-st.markdown("""
+st.markdown(f"""
 **Compras e Folha de Pagamento**
 
-As compras têm se mantido estáveis, com uma média mensal de R$ 97.028,76. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações inesperadas. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
+As compras têm se mantido estáveis, com uma média mensal de {media_compras_formatted}. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
 
-Em relação à folha de pagamento, a média mensal foi de R$ 11.805,60, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
+Em relação à folha de pagamento, a média mensal foi de {media_folha_formatted}, representando um valor relativamente constante ao longo do ano. Esse comportamento permite previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
 
 **Vendas e Impostos (DAS)**
 
-O total de vendas realizadas no período foi de R$ 989.194,79, com uma média mensal de R$ 109.910,53. Comparando com o valor de DAS pago, que somou R$ 70.308,71 durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
+O total de vendas realizadas no período foi de {total_vendas_formatted}, com uma média mensal de {media_vendas_formatted}. Comparando com o valor de DAS pago, que somou {total_das_formatted} durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
 
 **Total de Despesas e Custos vs Receita**
 
-Ao observarmos o total de despesas, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a R$ 1.141.244,26. Com uma receita total de R$ 937.193,79, a empresa apresenta um saldo negativo de R$ 204.050,47, indicando que, até o momento, as receitas estão conseguindo cobrir os custos e as despesas.
+Ao observarmos o total de despesas, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a {total_despesas_formatted}. Com uma receita total de {total_vendas_formatted}, a empresa apresenta um saldo negativo de {saldo_negativo_formatted}, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
 
-Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter o controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para garantir essa sustentabilidade financeira ao longo do ano.
+Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter um controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para garantir a saúde financeira da empresa ao longo do ano.
 """)
 
 # Ajuste final de estilo para os comentários
