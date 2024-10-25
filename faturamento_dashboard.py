@@ -35,23 +35,18 @@ st.markdown('''
 <style>
 .stApp {
     background: linear-gradient(180deg, #1f1f1f, #f0f2f6);
-    color: #000000;
+    color: #ffffff;
 }
 h1, h2, h3, h4 {
     text-align: center;
-    color: #1f4e79;
+    color: #ffffff;
 }
 </style>
 ''', unsafe_allow_html=True)
 
-# Função para formatar valores monetários, incluindo tratamento para valores negativos
+# Função para formatar valores monetários
 def format_currency(value):
-    is_negative = value < 0
-    value = abs(value)
-    formatted = f"R$ {value:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
-    if is_negative:
-        formatted = f"({formatted})"
-    return formatted
+    return f"R$ {value:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
 
 # Função para criar um cartão métrico personalizado
 def metric_card(title, value, background, text_color):
@@ -99,22 +94,122 @@ with col7:
 with col8:
     metric_card("📑 Total DCTFWeb", format_currency(fin_data['Darf DctfWeb'].sum()), background="#795548", text_color="#ffffff")
 
-# Gráficos e tabela interativa permanecem os mesmos (inclua-os aqui)
+# Receita x Compras
+grafico_receita_compras = go.Figure()
+grafico_receita_compras.add_trace(go.Scatter(
+    x=fin_data['Período'], y=fin_data['Vendas'],
+    mode='lines+markers',
+    name='Vendas',
+    line=dict(width=3, color='#1f77b4'),
+    marker=dict(size=8, color='#1f77b4', opacity=0.8)
+))
+grafico_receita_compras.add_trace(go.Scatter(
+    x=fin_data['Período'], y=fin_data['COMPRAS'],
+    mode='lines+markers',
+    name='Compras',
+    line=dict(width=3, color='#ff7f0e'),
+    marker=dict(size=8, color='#ff7f0e', opacity=0.8)
+))
+grafico_receita_compras.update_layout(
+    title="Comparativo de Receitas vs Compras",
+    xaxis_title="Mês/Ano",
+    yaxis_title="Valores em R$",
+    template="plotly_dark",
+    title_font_size=20,
+    font=dict(color='#ffffff'),
+    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+)
+st.plotly_chart(grafico_receita_compras, use_container_width=True)
+
+# Receita x Imposto DAS
+grafico_receita_das = px.bar(
+    fin_data, x='Período', y=['Vendas', 'DAS'],
+    barmode='group',
+    labels={"value": "Valores em R$", "Período": "Mês/Ano"},
+    title="Receitas vs DAS (Imposto)",
+    color_discrete_sequence=['#2196f3', '#f44336']
+)
+grafico_receita_das.update_layout(template="plotly_dark", title_font_size=20)
+st.plotly_chart(grafico_receita_das, use_container_width=True)
+
+# Receita Total vs Despesas Totais
+grafico_receita_despesas = go.Figure()
+grafico_receita_despesas.add_trace(go.Scatter(x=fin_data['Período'], y=fin_data['Vendas'],
+                                              mode='lines+markers', name='Receita Total',
+                                              line=dict(width=3, color='#4caf50')))
+grafico_receita_despesas.add_trace(go.Scatter(x=fin_data['Período'], y=fin_data['Despesas Totais'],
+                                              mode='lines+markers', name='Despesas Totais',
+                                              line=dict(width=3, dash='dash', color='#f44336')))
+grafico_receita_despesas.update_layout(
+    title="Receita Total vs Despesas Totais",
+    xaxis_title="Mês/Ano",
+    yaxis_title="Valores em R$",
+    template="plotly_dark",
+    title_font_size=20,
+    font=dict(color='#ffffff')
+)
+st.plotly_chart(grafico_receita_despesas, use_container_width=True)
+
+# Gráfico sugestivo: Análise de Lucro/Prejuízo
+grafico_lucro_prejuizo = px.area(
+    fin_data, x='Período', y='Lucro/Prejuízo',
+    labels={"Lucro/Prejuízo": "Valores em R$", "Período": "Mês/Ano"},
+    title="Análise de Lucro/Prejuízo Mensal",
+    color_discrete_sequence=['#9e9d24']
+)
+grafico_lucro_prejuizo.update_layout(
+    template="plotly_dark",
+    title_font_size=20,
+    font=dict(color='#ffffff')
+)
+st.plotly_chart(grafico_lucro_prejuizo, use_container_width=True)
+
+# Tabela Interativa para Consulta
+st.markdown("### Tabela Interativa para Consulta de Dados Financeiros")
+fin_data_display = fin_data.copy()
+colunas_monetarias = ['Darf DctfWeb', 'DAS', 'FGTS', 'Contribuicao_Assistencial',
+                      'ISSQN Retido', 'COMPRAS', 'Vendas', 'Folha_Liquida',
+                      'Despesas Totais', 'Lucro/Prejuízo']
+for coluna in colunas_monetarias:
+    fin_data_display[coluna] = fin_data_display[coluna].apply(format_currency)
+
+# Adicionando uma linha de totais na tabela
+totais = {
+    'Período': 'Totais',
+    'Darf DctfWeb': format_currency(fin_data['Darf DctfWeb'].sum()),
+    'DAS': format_currency(fin_data['DAS'].sum()),
+    'FGTS': format_currency(fin_data['FGTS'].sum()),
+    'Contribuicao_Assistencial': format_currency(fin_data['Contribuicao_Assistencial'].sum()),
+    'ISSQN Retido': format_currency(fin_data['ISSQN Retido'].sum()),
+    'COMPRAS': format_currency(fin_data['COMPRAS'].sum()),
+    'Vendas': format_currency(fin_data['Vendas'].sum()),
+    'Folha_Liquida': format_currency(fin_data['Folha_Liquida'].sum()),
+    'Despesas Totais': format_currency(fin_data['Despesas Totais'].sum()),
+    'Lucro/Prejuízo': format_currency(fin_data['Lucro/Prejuízo'].sum())
+}
+fin_data_display = pd.concat([fin_data_display, pd.DataFrame([totais])], ignore_index=True)
+
+st.dataframe(fin_data_display)
+
+# Outras Despesas Não Registradas na Planilha
+st.markdown("### Outras Despesas Não Registradas na Planilha")
+st.markdown("Essas despesas não estão incluídas nas demonstrações acima.")
+st.markdown("- **COMPRA ATIVO**: R$ 78.390,94")
+st.markdown("- **MAT USO CONSUMO**: R$ 31.785,62")
+
+# Comentário final
+st.markdown(
+    "<div style='text-align: center; font-size: 24px; color: #ffffff;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
+)
 
 # Cálculos para os comentários finais
 num_meses = len(fin_data)
 
-total_compras = fin_data['COMPRAS'].sum()
-media_compras = total_compras / num_meses
-
-total_folha = fin_data['Folha_Liquida'].sum()
-media_folha = total_folha / num_meses
-
+media_compras = fin_data['COMPRAS'].mean()
+media_folha = fin_data['Folha_Liquida'].mean()
 total_vendas = fin_data['Vendas'].sum()
-media_vendas = total_vendas / num_meses
-
+media_vendas = fin_data['Vendas'].mean()
 total_das = fin_data['DAS'].sum()
-
 total_despesas = fin_data['Despesas Totais'].sum()
 saldo_negativo = total_vendas - total_despesas
 
@@ -127,40 +222,33 @@ total_das_formatted = format_currency(total_das)
 total_despesas_formatted = format_currency(total_despesas)
 saldo_negativo_formatted = format_currency(saldo_negativo)
 
-# Adicionando os comentários finais com valores calculados
+# Adicionando os comentários finais simplificados
 st.markdown("---")  # Linha separadora
 st.markdown("## Resumo do Desempenho Financeiro")
 
 st.markdown(f"""
-Gostaria de compartilhar um resumo do desempenho financeiro da empresa de janeiro a setembro de 2024, focando em alguns pontos importantes sobre as **compras**, **folha de pagamento**, **vendas** e os **impostos pagos**.
+- **Compras**: Média mensal de {media_compras_formatted}.
+- **Folha de Pagamento**: Média mensal de {media_folha_formatted}.
+- **Vendas**: Total de {total_vendas_formatted} com média mensal de {media_vendas_formatted}.
+- **Impostos (DAS)**: Total pago de {total_das_formatted}.
+- **Despesas Totais**: {total_despesas_formatted}.
+- **Saldo**: {saldo_negativo_formatted} (Receita Total - Despesas Totais).
+""")
 
-### Compras e Folha de Pagamento
-
-As **compras** têm se mantido estáveis, com uma média mensal de **{media_compras_formatted}**. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações inesperadas. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
-
-Em relação à **folha de pagamento**, a média mensal foi de **{media_folha_formatted}**, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
-
-### Vendas e Impostos (DAS)
-
-O total de **vendas** realizadas no período foi de **{total_vendas_formatted}**, com uma média mensal de **{media_vendas_formatted}**. Comparando com o valor de **DAS** pago, que somou **{total_das_formatted}** durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
-
-### Total de Despesas e Custos vs Receita
-
-Ao observarmos o total de **despesas**, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a **{total_despesas_formatted}**. Com uma receita total de **{total_vendas_formatted}**, a empresa apresenta um **saldo negativo de {saldo_negativo_formatted}**, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
-
-Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter o controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para que possamos garantir essa sustentabilidade financeira ao longo do ano.
+st.markdown("""
+O resultado indica que as receitas não estão cobrindo totalmente os custos e despesas. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomenda-se manter um controle rigoroso sobre as compras e custos fixos, considerando também a carga tributária, para garantir a saúde financeira da empresa ao longo do ano.
 """)
 
 # Ajuste final de estilo para os comentários
 st.markdown('''
 <style>
 h2, h3, h4 {
-    color: #1f4e79;
+    color: #ffffff;
 }
-p {
+p, li {
     font-size: 16px;
     line-height: 1.6;
-    color: #000000;
+    color: #ffffff;
 }
 </style>
 ''', unsafe_allow_html=True)
