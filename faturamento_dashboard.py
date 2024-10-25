@@ -109,4 +109,15 @@ st.plotly_chart(grafico_receita_despesas, use_container_width=True)
 
 # Gráfico sugestivo: Análise de Lucro/Prejuízo
 grafico_lucro_prejuizo = px.area(
-    fin_data, x='Período', y='Lucro/Preju
+    fin_data, x='Período', y='Lucro/Prejuízo',
+    labels={"Lucro/Prejuízo": "Valores em R$", "Período": "Mês/Ano"},
+    title="Análise de Lucro/Prejuízo Mensal"
+)
+grafico_lucro_prejuizo.update_layout(template="plotly", title_font_size=20)
+st.plotly_chart(grafico_lucro_prejuizo, use_container_width=True)
+
+# Tabela Interativa para Consulta
+st.markdown("### Tabela Interativa para Consulta de Dados Financeiros")
+# Adicionando linha de totalização na tabela
+fin_data_display = fin_data.copy()
+colunas_monetarias = ['Darf DctfWeb', 'DAS', 'FGTS', 'Contribuicao_Assistencial', 'ISSQN Retido', 'COMPRAS', 'Vendas', 'Folha_Liquida', 'Despesas Totais', '
