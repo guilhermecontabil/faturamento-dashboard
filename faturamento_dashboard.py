@@ -20,7 +20,7 @@ dados = {
 
 # Criando DataFrame
 fin_data = pd.DataFrame(dados)
-fin_data['Período'] = pd.to_datetime(fin_data['Período'], format='%m/%Y')
+fin_data['Período'] = pd.to_datetime(fin_data['Período'], format='%m/%Y').dt.strftime('%m/%Y')
 
 # Calculando despesas totais
 fin_data['Despesas Totais'] = fin_data[['Darf DctfWeb', 'DAS', 'FGTS', 'Contribuição Assistencial', 'ISSQN Retido', 'COMPRAS', 'FOLHA LIQUIDA']].sum(axis=1)
@@ -29,9 +29,33 @@ fin_data['Despesas Totais'] = fin_data[['Darf DctfWeb', 'DAS', 'FGTS', 'Contribu
 fin_data['Lucro/Prejuízo'] = fin_data['Vendas'] - fin_data['Despesas Totais']
 
 # Configurando a página do Streamlit
-st.set_page_config(page_title="Dashboard Financeiro Futurista", layout="wide")
-st.title("🚀 Dashboard Financeiro Futurista ")
-st.markdown("### Demonstração moderna e intuitiva das Receitas, Despesas e Lucros")
+st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
+st.title("Dashboard Financeiro")
+st.markdown("### Visão Geral das Receitas, Despesas e Lucros")
+
+# Resumo Geral no topo (como cartões)
+receita_total = fin_data['Vendas'].sum()
+despesas_totais = fin_data['Despesas Totais'].sum()
+lucro_prejuizo_total = receita_total - despesas_totais
+
+col1, col2, col3 = st.columns(3)
+col1.metric(label="Receita Total", value=f"R$ {receita_total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col2.metric(label="Despesas Totais", value=f"R$ {despesas_totais:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col3.metric(label="Lucro/Prejuízo Total", value=f"R$ {lucro_prejuizo_total:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+
+# Cartões adicionais para Vendas, Compras, Salários, DAS e DCTFWeb
+total_vendas = fin_data['Vendas'].sum()
+total_compras = fin_data['COMPRAS'].sum()
+total_salarios = fin_data['FOLHA LIQUIDA'].sum()
+total_das = fin_data['DAS'].sum()
+total_dctfweb = fin_data['Darf DctfWeb'].sum()
+
+col4, col5, col6, col7, col8 = st.columns(5)
+col4.metric(label="Total Vendas", value=f"R$ {total_vendas:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col5.metric(label="Total Compras", value=f"R$ {total_compras:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col6.metric(label="Total Salários", value=f"R$ {total_salarios:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col7.metric(label="Total DAS", value=f"R$ {total_das:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+col8.metric(label="Total DCTFWeb", value=f"R$ {total_dctfweb:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
 # Receita x Compras
 grafico_receita_compras = px.line(
@@ -80,20 +104,21 @@ st.plotly_chart(grafico_lucro_prejuizo, use_container_width=True)
 
 # Tabela Interativa para Consulta
 st.markdown("### Tabela Interativa para Consulta de Dados Financeiros")
-st.dataframe(fin_data)
+# Formatando os valores monetários para Real Brasileiro (R$)
+fin_data_display = fin_data.copy()
+colunas_monetarias = ['Darf DctfWeb', 'DAS', 'FGTS', 'Contribuição Assistencial', 'ISSQN Retido', 'COMPRAS', 'Vendas', 'FOLHA LIQUIDA', 'Despesas Totais', 'Lucro/Prejuízo']
+for coluna in colunas_monetarias:
+    fin_data_display[coluna] = fin_data_display[coluna].apply(lambda x: f"R$ {x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
-# Resumo Geral
-receita_total = fin_data['Vendas'].sum()
-despesas_totais = fin_data['Despesas Totais'].sum()
-lucro_prejuizo_total = receita_total - despesas_totais
+st.dataframe(fin_data_display)
 
-st.markdown("### Resumo Financeiro Geral")
-st.metric(label="Receita Total", value=f"R$ {receita_total:,.2f}")
-st.metric(label="Despesas Totais", value=f"R$ {despesas_totais:,.2f}")
-st.metric(label="Lucro/Prejuízo Total", value=f"R$ {lucro_prejuizo_total:,.2f}")
+# Outras Despesas Não Registradas na Planilha
+st.markdown("### Outras Despesas Não Registradas na Planilha")
+st.markdown("Essas despesas não estão incluídas nas demonstrações acima.")
+st.markdown("- COMPRA ATIVO: R$ 78.390,94")
+st.markdown("- MAT USO CONSUMO: R$ 31.785,62")
 
 # Comentário final
 st.markdown(
-    "<div style='text-align: center; font-size: 24px;'>Este é apenas o começo do futuro financeiro da sua empresa!" \
-    " Confie nos números e impulsione seu crescimento! 🌟</div>", unsafe_allow_html=True
+    "<div style='text-align: center; font-size: 24px;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
 )
