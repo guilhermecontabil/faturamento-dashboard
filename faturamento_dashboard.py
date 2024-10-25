@@ -134,12 +134,15 @@ grafico_receita_compras.update_layout(
 st.plotly_chart(grafico_receita_compras, use_container_width=True)
 
 # Receita x Imposto DAS
+# Definindo cores específicas para evitar confusão
+cores_graficos_das = ['#1f77b4', '#2ca02c']  # Azul e verde
+
 grafico_receita_das = px.bar(
     fin_data, x='Período', y=['Vendas', 'DAS'],
     barmode='group',
     labels={"value": "Valores em R$", "Período": "Mês/Ano"},
     title="Receitas vs DAS (Imposto)",
-    color_discrete_sequence=cores_graficos[:2]
+    color_discrete_sequence=cores_graficos_das
 )
 grafico_receita_das.update_layout(template=grafico_tema, title_font_size=20, font=dict(color='#ffffff'))
 st.plotly_chart(grafico_receita_das, use_container_width=True)
@@ -208,30 +211,3 @@ st.markdown("### Outras Despesas Não Registradas na Planilha")
 st.write("Essas despesas não estão incluídas nas demonstrações acima.")
 st.write("- COMPRA ATIVO: R$ 78.390,94")
 st.write("- MAT USO CONSUMO: R$ 31.785,62")
-
-# Comentários Finais
-st.markdown("---")  # Linha separadora
-st.markdown("## Comentários Finais do Desempenho Financeiro")
-
-# Comentários em texto simples
-comentarios_finais = """
-Comentários finais do desempenho financeiro da empresa de janeiro a setembro de 2024, focando em alguns pontos importantes sobre as compras, folha de pagamento, vendas e os impostos pagos.
-
-Compras e Folha de Pagamento
-
-As compras têm se mantido estáveis, com uma média mensal de R$ 97.028,76. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações inesperadas. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
-
-Em relação à folha de pagamento, a média mensal foi de R$ 11.805,60, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
-
-Vendas e Impostos (DAS)
-
-O total de vendas realizadas no período foi de R$ 989.194,79, com uma média mensal de R$ 109.910,53. Comparando com o valor de DAS pago, que somou R$ 70.308,71 durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
-
-Total de Despesas e Custos vs Receita
-
-Ao observarmos o total de despesas, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a R$ 1.141.244,26. Com uma receita total de R$ 989.194,79, a empresa apresenta um saldo negativo de R$ 152.049,47, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
-
-Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter o controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para garantir essa sustentabilidade financeira ao longo do ano.
-"""
-
-st.write(comentarios_finais)
