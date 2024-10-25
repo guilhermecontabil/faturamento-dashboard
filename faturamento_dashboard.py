@@ -29,11 +29,11 @@ fin_data['Lucro/Prejuízo'] = fin_data['Vendas'] - fin_data['Despesas Totais']
 # Configurando a página do Streamlit
 st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
 
-# Estilo customizado
+# Estilo customizado com fundo gradiente do escuro para o claro
 st.markdown('''
 <style>
 body {
-    background-color: #f0f2f6;
+    background: linear-gradient(180deg, #1f1f1f, #f0f2f6);
     color: #000000;
 }
 h1, h2, h3, h4 {
@@ -206,15 +206,15 @@ Gostaria de compartilhar um resumo do desempenho financeiro da empresa de janeir
 
 As **compras** têm se mantido estáveis, com uma média mensal de **R$ 97.028,76**. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações inesperadas. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
 
-Em relação à **folha de pagamento**, a média mensal foi de **R$ 11.805,60**, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
+Em relação à **folha de pagamento**, a média mensal foi de **R$ 12.627,85**, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
 
 ### Vendas e Impostos (DAS)
 
-O total de **vendas** realizadas no período foi de **R$ 989.194,79**, com uma média mensal de **R$ 109.910,53**. Comparando com o valor de **DAS** pago, que somou **R$ 70.308,71** durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
+O total de **vendas** realizadas no período foi de **R$ 956.248,79**, com uma média mensal de **R$ 106.249,86**. Comparando com o valor de **DAS** pago, que somou **R$ 70.308,71** durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
 
 ### Total de Despesas e Custos vs Receita
 
-Ao observarmos o total de **despesas**, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a **R$ 1.141.244,26**. Com uma receita total de **R$ 937.193,79**, a empresa apresenta um **saldo negativo de R$ 204.050,47**, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
+Ao observarmos o total de **despesas**, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a **R$ 1.003.803,79**. Com uma receita total de **R$ 956.248,79**, a empresa apresenta um **saldo negativo de R$ 47.555,00**, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
 
 Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter o controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para que possamos garantir essa sustentabilidade financeira ao longo do ano.
 """)
