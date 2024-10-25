@@ -5,7 +5,10 @@ import plotly.graph_objects as go
 
 # Função para formatar moeda no padrão brasileiro
 def formatar_moeda(valor):
-    return f'R$ {valor:,.2f}'.replace(",", "X").replace(".", ",").replace("X", ".")
+    try:
+        return f'R$ {valor:,.2f}'.replace(",", "X").replace(".", ",").replace("X", ".")
+    except ValueError:
+        return "R$ 0,00"
 
 # Configurações de layout da página
 st.set_page_config(layout='wide', page_title='Dashboard Financeiro 2024', page_icon=':bar_chart:')
@@ -25,16 +28,16 @@ impostos_data = {
     'Valor_Pagar': [6806.03, 9021.59, 10990.54, 3594.41, 6007.22, 7688.00, 9800.00, 11200.00, 8200.00]
 }
 
-# Valores totais de Compra Ativo e Mat Uso Consumo
-despesa_ativo = 37000.00  # Valor total no período
-mat_uso_consumo = 17500.00  # Valor total no período
+# Valores totais de Compra Ativo e Mat Uso Consumo (corrigidos)
+despesa_ativo = 78390.94  # Valor total no período
+mat_uso_consumo = 31785.62  # Valor total no período
 
 # Criando DataFrames a partir dos dados embutidos
 df_faturamento = pd.DataFrame(faturamento_data)
 df_impostos = pd.DataFrame(impostos_data)
 
 # Convertendo colunas para os tipos corretos
-df_faturamento['Data'] = pd.to_datetime(df_faturamento['Data'], format='%Y-%m-%d')
+df_faturamento['Data'] = pd.to_datetime(df_faturamento['Data'], format='%Y-%m-%d').dt.strftime('%d/%m/%Y')
 df_impostos['Periodo'] = pd.to_datetime(df_impostos['Periodo'], format='%Y-%m')
 
 # Criando colunas para as comparações mensais (sem incluir uso e consumo/ativo)
@@ -43,7 +46,7 @@ df_faturamento['Despesas_Totais'] = df_faturamento['Compras'] + df_faturamento['
 # Adicionando valores de impostos ao DataFrame de faturamento
 df_impostos_mes = df_impostos.groupby(df_impostos['Periodo'].dt.to_period('M'))['Valor_Pagar'].sum().reset_index()
 df_impostos_mes['Periodo'] = df_impostos_mes['Periodo'].dt.strftime('%m/%Y')
-df_faturamento['Data_Mes'] = df_faturamento['Data'].dt.to_period('M').dt.strftime('%m/%Y')
+df_faturamento['Data_Mes'] = pd.to_datetime(df_faturamento['Data'], format='%d/%m/%Y').dt.to_period('M').dt.strftime('%m/%Y')
 
 df_faturamento = df_faturamento.merge(df_impostos_mes, how='left', left_on='Data_Mes', right_on='Periodo')
 df_faturamento['Valor_Pagar'].fillna(0, inplace=True)
@@ -133,10 +136,15 @@ st.plotly_chart(fig3, use_container_width=True)
 st.header('\U0001F50D Análise de Resultados Mensais')
 df_faturamento['Resultado_Status'] = df_faturamento['Resultado'].apply(lambda x: 'Positivo' if x >= 0 else 'Negativo')
 
-st.dataframe(df_faturamento.style.format({
+st.dataframe(df_faturamento[['Data', 'Compras', 'Vendas', 'Folha_Liquida', 'Despesas_Totais', 'Valor_Pagar', 'Despesas_Totais_Completas', 'Resultado', 'Valor_Pagar_DAS', 'Resultado_Status']].style.format({
     'Vendas': 'R$ {:,.2f}',
+    'Compras': 'R$ {:,.2f}',
+    'Folha_Liquida': 'R$ {:,.2f}',
+    'Despesas_Totais': 'R$ {:,.2f}',
+    'Valor_Pagar': 'R$ {:,.2f}',
     'Despesas_Totais_Completas': 'R$ {:,.2f}',
-    'Resultado': 'R$ {:,.2f}'
+    'Resultado': 'R$ {:,.2f}',
+    'Valor_Pagar_DAS': 'R$ {:,.2f}'
 }))
 
 # Gráfico de linha para visualizar o saldo mensal (resultado)
@@ -149,6 +157,7 @@ st.plotly_chart(fig4, use_container_width=True)
 st.header('\U0001F4E6 Despesas de Uso e Consumo e Ativo (Valor Total)')
 st.markdown(f"""
 **Despesas de Uso e Consumo:** {formatar_moeda(mat_uso_consumo)} (Valor total no período).
+
 **Despesas com Ativo:** {formatar_moeda(despesa_ativo)} (Valor total no período).
 
 Esses valores **não estão incluídos** nas comparações mensais acima, pois são totais do período.
