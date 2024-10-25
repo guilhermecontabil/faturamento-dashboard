@@ -1,168 +1,99 @@
-import streamlit as st
 import pandas as pd
+import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+from datetime import datetime
 
-# Função para formatar moeda no padrão brasileiro
-def formatar_moeda(valor):
-    try:
-        return f'R$ {valor:,.2f}'.replace(",", "X").replace(".", ",").replace("X", ".")
-    except ValueError:
-        return "R$ 0,00"
-
-# Configurações de layout da página
-st.set_page_config(layout='wide', page_title='Dashboard Financeiro 2024', page_icon=':bar_chart:')
-
-# Dados de Faturamento e Compras embutidos diretamente (atualizado a partir da limpeza dos dados)
-faturamento_data = {
-    'Data': ['2024-01', '2024-02', '2024-03', '2024-04', '2024-05', '2024-06', '2024-07', '2024-08', '2024-09'],
-    'Compras': [105160.60, 107065.02, 64392.80, 120088.99, 124917.39, 89430.32, 115399.63, 81134.93, 72725.11],
-    'Vendas': [79964.37, 105745.62, 127695.82, 41245.16, 69917.40, 105804.46, 151307.07, 112968.77, 142545.12],
-    'Folha_Liquida': [11614.67, 11459.96, 11220.51, 11982.91, 12607.28, 11809.55, 12145.88, 12400.17, 13012.31]
+# Dados embutidos no código, baseados no arquivo fornecido
+# (Os dados são apenas para simulação e análise do dashboard)
+dados = {
+    'Período': ['01/2024', '02/2024', '03/2024', '04/2024', '05/2024'],
+    'Darf DctfWeb': [2021.90, 1682.27, 1702.63, 1715.30, 1779.19],
+    'DAS': [6806.03, 9021.59, 10990.54, 3594.41, 6007.22],
+    'FGTS': [1468.94, 1224.44, 1141.97, 1310.92, 1389.34],
+    'Contribuição Assistencial': [283.65, 226.58, 228.81, 259.75, 228.44],
+    'ISSQN Retido': [14.25, 10.40, 11.60, 7.68, 13.02],
+    'COMPRAS': [105160.60, 107065.02, 64392.80, 120088.99, 124917.39],
+    'Vendas': [79964.37, 105745.62, 127695.82, 41245.16, 69917.40],
+    'FOLHA LIQUIDA': [11614.67, 11459.96, 11220.51, 11982.91, 12607.28]
 }
 
-# Dados de Impostos embutidos diretamente
-impostos_data = {
-    'Periodo': ['2024-01', '2024-02', '2024-03', '2024-04', '2024-05', '2024-06', '2024-07', '2024-08', '2024-09'],
-    'Historico': ['DAS', 'DAS', 'DAS', 'DAS', 'DAS', 'DAS', 'DAS', 'DAS', 'DAS'],
-    'Valor_Pagar': [6806.03, 9021.59, 10990.54, 3594.41, 6007.22, 7688.00, 9800.00, 11200.00, 8200.00]
-}
+# Criando DataFrame
+fin_data = pd.DataFrame(dados)
+fin_data['Período'] = pd.to_datetime(fin_data['Período'], format='%m/%Y')
 
-# Valores totais de Compra Ativo e Mat Uso Consumo (corrigidos)
-despesa_ativo = 78390.94  # Valor total no período
-mat_uso_consumo = 31785.62  # Valor total no período
+# Calculando despesas totais
+fin_data['Despesas Totais'] = fin_data[['Darf DctfWeb', 'DAS', 'FGTS', 'Contribuição Assistencial', 'ISSQN Retido', 'COMPRAS', 'FOLHA LIQUIDA']].sum(axis=1)
 
-# Criando DataFrames a partir dos dados embutidos
-df_faturamento = pd.DataFrame(faturamento_data)
-df_impostos = pd.DataFrame(impostos_data)
+# Calculando lucro/prejuízo
+fin_data['Lucro/Prejuízo'] = fin_data['Vendas'] - fin_data['Despesas Totais']
 
-# Convertendo colunas para os tipos corretos
-df_faturamento['Data'] = pd.to_datetime(df_faturamento['Data'], format='%Y-%m').dt.strftime('%m/%Y')
-df_impostos['Periodo'] = pd.to_datetime(df_impostos['Periodo'], format='%Y-%m').dt.strftime('%m/%Y')
+# Configurando a página do Streamlit
+st.set_page_config(page_title="Dashboard Financeiro Futurista", layout="wide")
+st.title("🚀 Dashboard Financeiro Futurista ")
+st.markdown("### Demonstração moderna e intuitiva das Receitas, Despesas e Lucros")
 
-# Criando colunas para as comparações mensais (sem incluir uso e consumo/ativo)
-df_faturamento['Despesas_Totais'] = df_faturamento['Compras'] + df_faturamento['Folha_Liquida']
+# Receita x Compras
+grafico_receita_compras = px.line(
+    fin_data, x='Período', y=['Vendas', 'COMPRAS'],
+    labels={"value": "Valores em R$", "Período": "Mês/Ano"},
+    title="Comparativo de Receitas vs Compras"
+)
+grafico_receita_compras.update_layout(template="plotly_dark", title_font_size=20)
+st.plotly_chart(grafico_receita_compras, use_container_width=True)
 
-# Adicionando valores de impostos ao DataFrame de faturamento
-df_impostos_mes = df_impostos.groupby('Periodo')['Valor_Pagar'].sum().reset_index()
-df_faturamento = df_faturamento.merge(df_impostos_mes, how='left', left_on='Data', right_on='Periodo')
-df_faturamento['Valor_Pagar'].fillna(0, inplace=True)
-df_faturamento['Despesas_Totais_Completas'] = df_faturamento['Despesas_Totais'] + df_faturamento['Valor_Pagar']
-df_faturamento['Resultado'] = df_faturamento['Vendas'] - df_faturamento['Despesas_Totais_Completas']
+# Receita x Imposto DAS
+grafico_receita_das = px.bar(
+    fin_data, x='Período', y=['Vendas', 'DAS'],
+    barmode='group',
+    labels={"value": "Valores em R$", "Período": "Mês/Ano"},
+    title="Receitas vs DAS (Imposto)"
+)
+grafico_receita_das.update_layout(template="plotly_white", title_font_size=20)
+st.plotly_chart(grafico_receita_das, use_container_width=True)
 
-# Título e Introdução
-st.title("\U0001F310 Dashboard Financeiro 2024")
-st.markdown("""
-### Visão consolidada das finanças da empresa para 2024
-Análise de **vendas**, **compras**, **folha de pagamento**, e **impostos** no período.
-As despesas totais **não incluem** os valores de uso e consumo e ativo, que serão destacados separadamente.
-""")
+# Receita Total vs Despesas Totais
+grafico_receita_despesas = go.Figure()
+grafico_receita_despesas.add_trace(go.Scatter(x=fin_data['Período'], y=fin_data['Vendas'],
+                                              mode='lines+markers', name='Receita Total',
+                                              line=dict(width=3)))
+grafico_receita_despesas.add_trace(go.Scatter(x=fin_data['Período'], y=fin_data['Despesas Totais'],
+                                              mode='lines+markers', name='Despesas Totais',
+                                              line=dict(width=3, dash='dash')))
+grafico_receita_despesas.update_layout(
+    title="Receita Total vs Despesas Totais",
+    xaxis_title="Mês/Ano",
+    yaxis_title="Valores em R$",
+    template="plotly_dark",
+    title_font_size=20
+)
+st.plotly_chart(grafico_receita_despesas, use_container_width=True)
 
-# Seção de Métricas Principais
-st.header('\U0001F4CA Resumo Financeiro')
-total_vendas = df_faturamento['Vendas'].sum()
-total_compras = df_faturamento['Compras'].sum()
-total_folha = df_faturamento['Folha_Liquida'].sum()
-total_impostos = df_impostos['Valor_Pagar'].sum()
+# Gráfico sugestivo: Análise de Lucro/Prejuízo
+grafico_lucro_prejuizo = px.area(
+    fin_data, x='Período', y='Lucro/Prejuízo',
+    labels={"Lucro/Prejuízo": "Valores em R$", "Período": "Mês/Ano"},
+    title="Análise de Lucro/Prejuízo Mensal"
+)
+grafico_lucro_prejuizo.update_layout(template="plotly", title_font_size=20)
+st.plotly_chart(grafico_lucro_prejuizo, use_container_width=True)
 
-# Métricas principais
-col1, col2, col3, col4 = st.columns(4)
-col1.metric(label='Vendas Totais (Realizado)', value=formatar_moeda(total_vendas))
-col2.metric(label='Compras Totais (Realizado)', value=formatar_moeda(total_compras))
-col3.metric(label='Folha Líquida Total (Realizado)', value=formatar_moeda(total_folha))
-col4.metric(label='Impostos Totais (Realizado)', value=formatar_moeda(total_impostos))
+# Tabela Interativa para Consulta
+st.markdown("### Tabela Interativa para Consulta de Dados Financeiros")
+st.dataframe(fin_data)
 
-# Gráfico de Vendas vs Compras
-st.header('\U0001F4C8 Comparação de Vendas e Compras (Realizado)')
-fig1 = px.line(df_faturamento, x='Data', y=['Vendas', 'Compras'], title='Vendas e Compras Mensais', markers=True)
-fig1.update_layout(yaxis_title='Valor (R$)', xaxis_title='Mês/Ano', legend_title_text='Categoria')
-st.plotly_chart(fig1, use_container_width=True)
+# Resumo Geral
+receita_total = fin_data['Vendas'].sum()
+despesas_totais = fin_data['Despesas Totais'].sum()
+lucro_prejuizo_total = receita_total - despesas_totais
 
-# Gráfico de barras comparando Receita e Despesas Totais (incluindo impostos)
-st.header('\U0001F4C9 Receita vs Despesas Totais (Compras + Folha de Pagamento + Impostos)')
-fig2 = go.Figure()
+st.markdown("### Resumo Financeiro Geral")
+st.metric(label="Receita Total", value=f"R$ {receita_total:,.2f}")
+st.metric(label="Despesas Totais", value=f"R$ {despesas_totais:,.2f}")
+st.metric(label="Lucro/Prejuízo Total", value=f"R$ {lucro_prejuizo_total:,.2f}")
 
-# Receita
-fig2.add_trace(go.Bar(
-    x=df_faturamento['Data'],
-    y=df_faturamento['Vendas'],
-    name='Vendas (Receita)',
-    marker_color='rgb(26, 118, 255)'
-))
-
-# Despesas Totais (Compras + Folha + Impostos)
-fig2.add_trace(go.Bar(
-    x=df_faturamento['Data'],
-    y=df_faturamento['Despesas_Totais_Completas'],
-    name='Despesas Totais',
-    marker_color='rgb(255, 99, 71)'
-))
-
-fig2.update_layout(barmode='group', xaxis_tickangle=-45, title="Receita vs Despesas Totais (Incluindo Impostos)")
-st.plotly_chart(fig2, use_container_width=True)
-
-# Gráfico comparando Receita vs DAS
-st.header('\U0001F4B8 Comparativo Receita vs DAS')
-fig3 = go.Figure()
-
-# Receita
-fig3.add_trace(go.Bar(
-    x=df_faturamento['Data'],
-    y=df_faturamento['Vendas'],
-    name='Vendas (Receita)',
-    marker_color='rgb(26, 118, 255)'
-))
-
-# DAS
-fig3.add_trace(go.Bar(
-    x=df_faturamento['Data'],
-    y=df_faturamento['Valor_Pagar'],
-    name='DAS',
-    marker_color='rgb(255, 165, 0)'
-))
-
-fig3.update_layout(barmode='group', xaxis_tickangle=-45, title="Receita vs DAS")
-st.plotly_chart(fig3, use_container_width=True)
-
-# Gráfico horizontal para visualizar os impostos por tipo (DAS)
-st.header('\U0001F4B0 Valores de Impostos por Mês (Horizontal)')
-fig5 = px.bar(df_impostos, x='Valor_Pagar', y='Periodo', orientation='h', title='Valores de Impostos por Mês e Tipo', text_auto=True, color='Historico')
-fig5.update_layout(yaxis_title='Mês/Ano', xaxis_title='Valor (R$)', barmode='stack')
-st.plotly_chart(fig5, use_container_width=True)
-
-# Análise de Resultados Mensais
-st.header('\U0001F50D Análise de Resultados Mensais')
-df_faturamento['Resultado_Status'] = df_faturamento['Resultado'].apply(lambda x: 'Positivo' if x >= 0 else 'Negativo')
-
-st.dataframe(df_faturamento[['Data', 'Compras', 'Vendas', 'Folha_Liquida', 'Despesas_Totais', 'Valor_Pagar', 'Despesas_Totais_Completas', 'Resultado', 'Resultado_Status']].style.format({
-    'Vendas': 'R$ {:,.2f}',
-    'Compras': 'R$ {:,.2f}',
-    'Folha_Liquida': 'R$ {:,.2f}',
-    'Despesas_Totais': 'R$ {:,.2f}',
-    'Valor_Pagar': 'R$ {:,.2f}',
-    'Despesas_Totais_Completas': 'R$ {:,.2f}',
-    'Resultado': 'R$ {:,.2f}'
-}))
-
-# Gráfico de linha para visualizar o saldo mensal (resultado)
-st.header('\U0001F4C8 Resultado Mensal (Saldo)')
-fig4 = px.line(df_faturamento, x='Data', y='Resultado', title='Resultado Mensal (Receitas - Despesas)', markers=True)
-fig4.update_layout(yaxis_title='Saldo (R$)', xaxis_title='Mês/Ano')
-st.plotly_chart(fig4, use_container_width=True)
-
-# Exibindo os valores de Uso e Consumo e Ativo no final (sem incluir nas comparações)
-st.header('\U0001F4E6 Despesas de Uso e Consumo e Ativo (Valor Total)')
-st.markdown(f"""
-**Despesas de Uso e Consumo:** {formatar_moeda(mat_uso_consumo)} (Valor total no período).
-
-**Despesas com Ativo:** {formatar_moeda(despesa_ativo)} (Valor total no período).
-
-Esses valores **não estão incluídos** nas comparações mensais acima, pois são totais do período.
-""")
-
-# Conclusão
-st.header('\U0001F4C1 Conclusão Geral')
-st.markdown(f"""
-As comparações mensais de receita e despesas incluem **vendas, compras, folha de pagamento e impostos**, enquanto as despesas de **uso e consumo** e **ativo** são valores totais e estão destacados separadamente.
-Essa visão clara permite avaliar o impacto das despesas operacionais e financeiras da empresa ao longo do tempo.
-""")
+# Comentário final
+st.markdown(
+    "<div style='text-align: center; font-size: 24px;'>Este é apenas o começo do futuro financeiro da sua empresa!" \
+    " Confie nos números e impulsione seu crescimento! 🌟</div>", unsafe_allow_html=True
+)
