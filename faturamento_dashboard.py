@@ -60,15 +60,29 @@ with st.container():
     col2.metric(label="Despesas Totais", value=f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
     col3.metric(label="Lucro/Prejuízo Total", value=f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
-# Cartões adicionais para Vendas, Compras, Salários, DAS e DCTFWeb usando container
+# Indicadores Detalhados em Seção Separada e Estilizada
+st.markdown("#### Indicadores Detalhados")
 with st.container():
-    st.markdown("#### Indicadores Detalhados")
-    col4, col5, col6, col7, col8 = st.columns(5, gap="large")
-    col4.metric(label="Total Vendas", value=f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col5.metric(label="Total Compras", value=f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col6.metric(label="Total Salários", value=f"R$ {fin_data['FOLHA LIQUIDA'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col7.metric(label="Total DAS", value=f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
-    col8.metric(label="Total DCTFWeb", value=f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    st.markdown(
+        "<div style='display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between;'>"
+        "<div style='background-color: #f8f9fa; padding: 20px; border-radius: 15px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); flex: 1; min-width: 200px; text-align: center;'>"
+        f"<h4>Total Vendas</h4><h3>R$ {fin_data['Vendas'].sum():,.2f}</h3>"
+        "</div>"
+        "<div style='background-color: #f8f9fa; padding: 20px; border-radius: 15px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); flex: 1; min-width: 200px; text-align: center;'>"
+        f"<h4>Total Compras</h4><h3>R$ {fin_data['COMPRAS'].sum():,.2f}</h3>"
+        "</div>"
+        "<div style='background-color: #f8f9fa; padding: 20px; border-radius: 15px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); flex: 1; min-width: 200px; text-align: center;'>"
+        f"<h4>Total Salários</h4><h3>R$ {fin_data['FOLHA LIQUIDA'].sum():,.2f}</h3>"
+        "</div>"
+        "<div style='background-color: #f8f9fa; padding: 20px; border-radius: 15px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); flex: 1; min-width: 200px; text-align: center;'>"
+        f"<h4>Total DAS</h4><h3>R$ {fin_data['DAS'].sum():,.2f}</h3>"
+        "</div>"
+        "<div style='background-color: #f8f9fa; padding: 20px; border-radius: 15px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); flex: 1; min-width: 200px; text-align: center;'>"
+        f"<h4>Total DCTFWeb</h4><h3>R$ {fin_data['Darf DctfWeb'].sum():,.2f}</h3>"
+        "</div>"
+        "</div>",
+        unsafe_allow_html=True
+    )
 
 # Receita x Compras
 grafico_receita_compras = px.line(
@@ -137,7 +151,7 @@ totais = {
     'Despesas Totais': f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
     'Lucro/Prejuízo': f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
 }
-fin_data_display = fin_data_display.append(totais, ignore_index=True)
+fin_data_display = pd.concat([fin_data_display, pd.DataFrame([totais])], ignore_index=True)
 
 st.dataframe(fin_data_display)
 
