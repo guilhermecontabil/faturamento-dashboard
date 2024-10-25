@@ -63,7 +63,7 @@ st.header('\U0001F4CA Resumo Financeiro')
 total_vendas = df_faturamento['Vendas'].sum()
 total_compras = df_faturamento['Compras'].sum()
 total_folha = df_faturamento['Folha_Liquida'].sum()
-total_impostos = df_faturamento['Valor_Pagar'].sum()
+total_impostos = df_impostos['Valor_Pagar'].sum()
 
 # Métricas principais
 col1, col2, col3, col4 = st.columns(4)
@@ -103,10 +103,6 @@ st.plotly_chart(fig2, use_container_width=True)
 
 # Gráfico comparando Receita vs DAS
 st.header('\U0001F4B8 Comparativo Receita vs DAS')
-df_das = df_impostos[df_impostos['Historico'].str.contains('DAS', case=False)].groupby('Periodo')['Valor_Pagar'].sum().reset_index()
-df_faturamento = df_faturamento.merge(df_das, how='left', left_on='Data', right_on='Periodo', suffixes=('', '_DAS'))
-df_faturamento['Valor_Pagar_DAS'].fillna(0, inplace=True)
-
 fig3 = go.Figure()
 
 # Receita
@@ -120,7 +116,7 @@ fig3.add_trace(go.Bar(
 # DAS
 fig3.add_trace(go.Bar(
     x=df_faturamento['Data'],
-    y=df_faturamento['Valor_Pagar_DAS'],
+    y=df_faturamento['Valor_Pagar'],
     name='DAS',
     marker_color='rgb(255, 165, 0)'
 ))
@@ -128,25 +124,24 @@ fig3.add_trace(go.Bar(
 fig3.update_layout(barmode='group', xaxis_tickangle=-45, title="Receita vs DAS")
 st.plotly_chart(fig3, use_container_width=True)
 
-# Gráfico de barras vertical para visualizar os impostos
-st.header('\U0001F4B0 Valores de Impostos por Mês')
-fig5 = px.bar(df_impostos_mes, x='Periodo', y='Valor_Pagar', title='Valores de Impostos por Mês', text_auto=True)
-fig5.update_layout(yaxis_title='Valor (R$)', xaxis_title='Mês/Ano', barmode='group')
+# Gráfico horizontal para visualizar os impostos por tipo (DAS)
+st.header('\U0001F4B0 Valores de Impostos por Mês (Horizontal)')
+fig5 = px.bar(df_impostos, x='Valor_Pagar', y='Periodo', orientation='h', title='Valores de Impostos por Mês e Tipo', text_auto=True, color='Historico')
+fig5.update_layout(yaxis_title='Mês/Ano', xaxis_title='Valor (R$)', barmode='stack')
 st.plotly_chart(fig5, use_container_width=True)
 
 # Análise de Resultados Mensais
 st.header('\U0001F50D Análise de Resultados Mensais')
 df_faturamento['Resultado_Status'] = df_faturamento['Resultado'].apply(lambda x: 'Positivo' if x >= 0 else 'Negativo')
 
-st.dataframe(df_faturamento[['Data', 'Compras', 'Vendas', 'Folha_Liquida', 'Despesas_Totais', 'Valor_Pagar', 'Despesas_Totais_Completas', 'Resultado', 'Valor_Pagar_DAS', 'Resultado_Status']].style.format({
+st.dataframe(df_faturamento[['Data', 'Compras', 'Vendas', 'Folha_Liquida', 'Despesas_Totais', 'Valor_Pagar', 'Despesas_Totais_Completas', 'Resultado', 'Resultado_Status']].style.format({
     'Vendas': 'R$ {:,.2f}',
     'Compras': 'R$ {:,.2f}',
     'Folha_Liquida': 'R$ {:,.2f}',
     'Despesas_Totais': 'R$ {:,.2f}',
     'Valor_Pagar': 'R$ {:,.2f}',
     'Despesas_Totais_Completas': 'R$ {:,.2f}',
-    'Resultado': 'R$ {:,.2f}',
-    'Valor_Pagar_DAS': 'R$ {:,.2f}'
+    'Resultado': 'R$ {:,.2f}'
 }))
 
 # Gráfico de linha para visualizar o saldo mensal (resultado)
