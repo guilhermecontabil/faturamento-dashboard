@@ -115,16 +115,16 @@ grafico_receita_compras.update_layout(
 
 st.plotly_chart(grafico_receita_compras, use_container_width=True)
 
-# Receita x Imposto DAS
-grafico_receita_das = px.bar(
-    fin_data, x='Período', y=['Vendas', 'DAS'],
+# Receita x Impostos
+grafico_receita_impostos = px.bar(
+    fin_data, x='Período', y=['Vendas', 'Darf DctfWeb', 'DAS', 'FGTS', 'Contribuicao_Assistencial', 'ISSQN Retido'],
     barmode='group',
     labels={"value": "Valores em R$", "Período": "Mês/Ano"},
-    title="Receitas vs DAS (Imposto)",
-    color_discrete_sequence=['#f4d06f', '#13c4a3']
+    title="Receitas vs Impostos Pagos",
+    color_discrete_sequence=px.colors.qualitative.Bold
 )
-grafico_receita_das.update_layout(template="plotly_dark", title_font_size=20)
-st.plotly_chart(grafico_receita_das, use_container_width=True)
+grafico_receita_impostos.update_layout(template="plotly_dark", title_font_size=20)
+st.plotly_chart(grafico_receita_impostos, use_container_width=True)
 
 # Receita Total vs Despesas Totais
 grafico_receita_despesas = go.Figure()
@@ -192,7 +192,16 @@ st.markdown("Essas despesas não estão incluídas nas demonstrações acima.")
 st.markdown("- COMPRA ATIVO: R$ 78.390,94")
 st.markdown("- MAT USO CONSUMO: R$ 31.785,62")
 
-# Comentário final
-st.markdown(
-    "<div style='text-align: center; font-size: 24px; color: #a7f3d0;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
-)
+# Comentários Finais sobre o Desempenho Financeiro
+st.markdown("""
+<div style='text-align: center; font-size: 24px; color: #f72585;'>
+    Comentários sobre o desempenho financeiro:
+    <ul style='text-align: left; color: #a7f3d0;'>
+        <li>As compras têm se mantido estáveis, com uma média mensal de R$ 97.028,76. Os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, mostrando um controle consistente e bem ajustado.</li>
+        <li>A folha de pagamento manteve uma média mensal de R$ 11.805,60, permitindo previsibilidade financeira e maior controle dos custos.</li>
+        <li>O total de vendas foi de R$ 989.194,79, com uma média mensal de R$ 109.910,53. O DAS pago durante o mesmo período foi de R$ 70.308,71.</li>
+        <li>As despesas totais (compras, folha e impostos) somaram R$ 1.141.244,26, enquanto as receitas totalizaram R$ 937.193,79, resultando em um saldo negativo de R$ 204.050,47. Isso demonstra a necessidade de um maior foco em reduzir custos e aumentar receitas para melhorar a saúde financeira da empresa.</li>
+    </ul>
+    Confie nos números e impulsione o crescimento da sua empresa!
+</div>
+""", unsafe_allow_html=True)
