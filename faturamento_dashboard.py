@@ -29,36 +29,35 @@ fin_data['Lucro/Prejuízo'] = fin_data['Vendas'] - fin_data['Despesas Totais']
 # Configurando a página do Streamlit
 st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
 
-# Estilo customizado para o fundo da página
+# Estilo customizado para o fundo da página e estilo neon
 page_bg_img = '''
 <style>
 body {
-    background-image: url("https://images.unsplash.com/photo-1523289333742-be1242760429");
-    background-size: cover;
-    color: white;
+    background-color: #0f0e17;
+    color: #ffffff;
 }
 </style>
 '''
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Título do dashboard
-st.title("Dashboard Financeiro")
-st.markdown("### Visão Geral das Receitas, Despesas e Lucros")
+st.markdown("<h1 style='text-align: center; color: #a7f3d0;'>Dashboard Financeiro Neon</h1>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #ff8a65;'>Visão Geral das Receitas, Despesas e Lucros</h3>", unsafe_allow_html=True)
 
 # Período da Análise
-st.markdown(f"Período da análise: {fin_data['Período'].min()} a {fin_data['Período'].max()}")
+st.markdown(f"<h4 style='text-align: center; color: #f4d06f;'>Período da análise: {fin_data['Período'].min()} a {fin_data['Período'].max()}</h4>", unsafe_allow_html=True)
 
-# Resumo Geral no topo usando cards estilizados com gradientes e ícones
+# Resumo Geral no topo usando cards estilizados com gradientes neon
 with st.container():
     st.markdown("#### Resumo Financeiro Geral")
     st.markdown(
         "<style>"
         "div[data-testid='metric-container'] {"
-        "    background: linear-gradient(135deg, #42a5f5, #478ed1);"
-        "    border: 1px solid #e1e1e1;"
+        "    background: linear-gradient(135deg, #ff4b5c, #ff8a65);"
+        "    border: 1px solid #ff8a65;"
         "    padding: 15px;"
         "    border-radius: 15px;"
-        "    box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.2);"
+        "    box-shadow: 0px 0px 20px #ff8a65;"
         "    margin-bottom: 15px;"
         "    color: white;"
         "}"
@@ -76,7 +75,7 @@ with st.container():
     col2.metric(label="💸 Despesas Totais", value=f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
     col3.metric(label="📊 Lucro/Prejuízo Total", value=f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
-# Indicadores Detalhados em Seção Separada e Estilizada
+# Indicadores Detalhados em Seção Separada e Estilizada com tema Neon
 st.markdown("#### Indicadores Detalhados")
 with st.container():
     col4, col5, col6, col7, col8 = st.columns(5, gap="large")
@@ -90,7 +89,8 @@ with st.container():
 grafico_receita_compras = px.line(
     fin_data, x='Período', y=['Vendas', 'COMPRAS'],
     labels={"value": "Valores em R$", "Período": "Mês/Ano"},
-    title="Comparativo de Receitas vs Compras"
+    title="Comparativo de Receitas vs Compras",
+    color_discrete_sequence=['#ff8a65', '#42a5f5']
 )
 grafico_receita_compras.update_layout(template="plotly_dark", title_font_size=20)
 st.plotly_chart(grafico_receita_compras, use_container_width=True)
@@ -100,19 +100,20 @@ grafico_receita_das = px.bar(
     fin_data, x='Período', y=['Vendas', 'DAS'],
     barmode='group',
     labels={"value": "Valores em R$", "Período": "Mês/Ano"},
-    title="Receitas vs DAS (Imposto)"
+    title="Receitas vs DAS (Imposto)",
+    color_discrete_sequence=['#f4d06f', '#13c4a3']
 )
-grafico_receita_das.update_layout(template="plotly_white", title_font_size=20)
+grafico_receita_das.update_layout(template="plotly_dark", title_font_size=20)
 st.plotly_chart(grafico_receita_das, use_container_width=True)
 
 # Receita Total vs Despesas Totais
 grafico_receita_despesas = go.Figure()
 grafico_receita_despesas.add_trace(go.Scatter(x=fin_data['Período'], y=fin_data['Vendas'],
                                               mode='lines+markers', name='Receita Total',
-                                              line=dict(width=3)))
+                                              line=dict(width=3, color='#ff4b5c')))
 grafico_receita_despesas.add_trace(go.Scatter(x=fin_data['Período'], y=fin_data['Despesas Totais'],
                                               mode='lines+markers', name='Despesas Totais',
-                                              line=dict(width=3, dash='dash')))
+                                              line=dict(width=3, dash='dash', color='#13c4a3')))
 grafico_receita_despesas.update_layout(
     title="Receita Total vs Despesas Totais",
     xaxis_title="Mês/Ano",
@@ -126,9 +127,10 @@ st.plotly_chart(grafico_receita_despesas, use_container_width=True)
 grafico_lucro_prejuizo = px.area(
     fin_data, x='Período', y='Lucro/Prejuízo',
     labels={"Lucro/Prejuízo": "Valores em R$", "Período": "Mês/Ano"},
-    title="Análise de Lucro/Prejuízo Mensal"
+    title="Análise de Lucro/Prejuízo Mensal",
+    color_discrete_sequence=['#a7f3d0']
 )
-grafico_lucro_prejuizo.update_layout(template="plotly", title_font_size=20)
+grafico_lucro_prejuizo.update_layout(template="plotly_dark", title_font_size=20)
 st.plotly_chart(grafico_lucro_prejuizo, use_container_width=True)
 
 # Tabela Interativa para Consulta
@@ -165,5 +167,5 @@ st.markdown("- MAT USO CONSUMO: R$ 31.785,62")
 
 # Comentário final
 st.markdown(
-    "<div style='text-align: center; font-size: 24px;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
+    "<div style='text-align: center; font-size: 24px; color: #a7f3d0;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
 )
