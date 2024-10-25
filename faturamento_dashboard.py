@@ -85,14 +85,34 @@ with st.container():
     col7.metric(label="💵 Total DAS", value=f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
     col8.metric(label="📑 Total DCTFWeb", value=f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
 
-# Receita x Compras
-grafico_receita_compras = px.line(
-    fin_data, x='Período', y=['Vendas', 'COMPRAS'],
-    labels={"value": "Valores em R$", "Período": "Mês/Ano"},
+# Receita x Compras com estilo Neon
+grafico_receita_compras = go.Figure()
+grafico_receita_compras.add_trace(go.Scatter(
+    x=fin_data['Período'], y=fin_data['Vendas'],
+    mode='lines+markers',
+    name='Vendas',
+    line=dict(width=3, color='#13c4a3'),
+    marker=dict(size=8, color='#13c4a3', opacity=0.8)
+))
+grafico_receita_compras.add_trace(go.Scatter(
+    x=fin_data['Período'], y=fin_data['COMPRAS'],
+    mode='lines+markers',
+    name='Compras',
+    line=dict(width=3, color='#f72585'),
+    marker=dict(size=8, color='#f72585', opacity=0.8)
+))
+grafico_receita_compras.update_layout(
     title="Comparativo de Receitas vs Compras",
-    color_discrete_sequence=['#ff8a65', '#42a5f5']
+    xaxis_title="Mês/Ano",
+    yaxis_title="Valores em R$",
+    template="plotly_dark",
+    title_font_size=20,
+    paper_bgcolor='#0f0e17',
+    plot_bgcolor='#0f0e17',
+    font=dict(color='#ffffff'),
+    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
 )
-grafico_receita_compras.update_layout(template="plotly_dark", title_font_size=20)
+
 st.plotly_chart(grafico_receita_compras, use_container_width=True)
 
 # Receita x Imposto DAS
