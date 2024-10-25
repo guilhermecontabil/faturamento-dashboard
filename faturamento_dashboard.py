@@ -10,14 +10,12 @@ def formatar_moeda(valor):
 # Configurações de layout da página
 st.set_page_config(layout='wide', page_title='Dashboard Financeiro 2024', page_icon=':bar_chart:')
 
-# Dados de Faturamento e Compras embutidos diretamente
+# Dados de Faturamento e Compras embutidos diretamente (atualizado a partir da limpeza dos dados)
 faturamento_data = {
     'Data': ['2024-01-01', '2024-02-01', '2024-03-01', '2024-04-01', '2024-05-01', '2024-06-01', '2024-07-01', '2024-08-01', '2024-09-01'],
     'Compras': [105160.60, 107065.02, 64392.80, 120088.99, 124917.39, 89430.32, 115399.63, 81134.93, 72725.11],
     'Vendas': [79964.37, 105745.62, 127695.82, 41245.16, 69917.40, 105804.46, 151307.07, 112968.77, 142545.12],
-    'Folha_Liquida': [11614.67, 11459.96, 11220.51, 11982.91, 12607.28, 11809.55, 12145.88, 12400.17, 13012.31],
-    'Compra_Ativo': [5000.00, 4000.00, 3000.00, 7000.00, 6000.00, 5000.00, 4000.00, 3000.00, 2000.00],
-    'Mat_Uso_Consumo': [2000.00, 1500.00, 1800.00, 2500.00, 2200.00, 2100.00, 2300.00, 1900.00, 1700.00]
+    'Folha_Liquida': [11614.67, 11459.96, 11220.51, 11982.91, 12607.28, 11809.55, 12145.88, 12400.17, 13012.31]
 }
 
 # Dados de Impostos embutidos diretamente
@@ -27,6 +25,10 @@ impostos_data = {
     'Valor_Pagar': [6806.03, 9021.59, 10990.54, 3594.41, 6007.22, 7688.00, 9800.00, 11200.00, 8200.00]
 }
 
+# Valores totais de Compra Ativo e Mat Uso Consumo
+despesa_ativo = 37000.00  # Valor total no período
+mat_uso_consumo = 17500.00  # Valor total no período
+
 # Criando DataFrames a partir dos dados embutidos
 df_faturamento = pd.DataFrame(faturamento_data)
 df_impostos = pd.DataFrame(impostos_data)
@@ -34,10 +36,6 @@ df_impostos = pd.DataFrame(impostos_data)
 # Convertendo colunas para os tipos corretos
 df_faturamento['Data'] = pd.to_datetime(df_faturamento['Data'], format='%Y-%m-%d')
 df_impostos['Periodo'] = pd.to_datetime(df_impostos['Periodo'], format='%Y-%m')
-
-# Total de uso e consumo e ativo (apenas total no período)
-despesa_uso_consumo = df_faturamento['Mat_Uso_Consumo'].sum()  # Total no período
-despesa_ativo = df_faturamento['Compra_Ativo'].sum()  # Total no período
 
 # Criando colunas para as comparações mensais (sem incluir uso e consumo/ativo)
 df_faturamento['Despesas_Totais'] = df_faturamento['Compras'] + df_faturamento['Folha_Liquida']
@@ -150,7 +148,7 @@ st.plotly_chart(fig4, use_container_width=True)
 # Exibindo os valores de Uso e Consumo e Ativo no final (sem incluir nas comparações)
 st.header('\U0001F4E6 Despesas de Uso e Consumo e Ativo (Valor Total)')
 st.markdown(f"""
-**Despesas de Uso e Consumo:** {formatar_moeda(despesa_uso_consumo)} (Valor total no período).
+**Despesas de Uso e Consumo:** {formatar_moeda(mat_uso_consumo)} (Valor total no período).
 **Despesas com Ativo:** {formatar_moeda(despesa_ativo)} (Valor total no período).
 
 Esses valores **não estão incluídos** nas comparações mensais acima, pois são totais do período.
