@@ -103,7 +103,6 @@ with col8:
     metric_card("📑 Total DCTFWeb", format_currency(fin_data['Darf DctfWeb'].sum()))
 
 # Gráficos
-# Definindo cores mais atraentes para os gráficos
 grafico_tema = 'plotly_dark'
 cores_graficos = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
 
@@ -206,66 +205,33 @@ st.dataframe(fin_data_display)
 
 # Outras Despesas Não Registradas na Planilha
 st.markdown("### Outras Despesas Não Registradas na Planilha")
-st.markdown("Essas despesas não estão incluídas nas demonstrações acima.")
-st.markdown("- **COMPRA ATIVO**: R$ 78.390,94")
-st.markdown("- **MAT USO CONSUMO**: R$ 31.785,62")
+st.write("Essas despesas não estão incluídas nas demonstrações acima.")
+st.write("- COMPRA ATIVO: R$ 78.390,94")
+st.write("- MAT USO CONSUMO: R$ 31.785,62")
 
-# Comentário final
-st.markdown(
-    "<div style='text-align: center; font-size: 24px; color: #A8AFB0;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
-)
-
-# Cálculos para os comentários finais
-num_meses = len(fin_data)
-media_compras = fin_data['COMPRAS'].mean()
-media_folha = fin_data['Folha_Liquida'].mean()
-total_vendas = fin_data['Vendas'].sum()
-media_vendas = fin_data['Vendas'].mean()
-total_das = fin_data['DAS'].sum()
-total_despesas = fin_data['Despesas Totais'].sum()
-saldo_negativo = total_vendas - total_despesas
-
-# Formatação dos valores
-media_compras_formatted = format_currency(media_compras)
-media_folha_formatted = format_currency(media_folha)
-total_vendas_formatted = format_currency(total_vendas)
-media_vendas_formatted = format_currency(media_vendas)
-total_das_formatted = format_currency(total_das)
-total_despesas_formatted = format_currency(total_despesas)
-saldo_negativo_formatted = format_currency(saldo_negativo)
-
-# Adicionando os comentários finais
+# Comentários Finais
 st.markdown("---")  # Linha separadora
 st.markdown("## Comentários Finais do Desempenho Financeiro")
 
-st.markdown(f"""
-**Compras e Folha de Pagamento**
+# Comentários em texto simples
+comentarios_finais = """
+Comentários finais do desempenho financeiro da empresa de janeiro a setembro de 2024, focando em alguns pontos importantes sobre as compras, folha de pagamento, vendas e os impostos pagos.
 
-As compras têm se mantido estáveis, com uma média mensal de {media_compras_formatted}. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
+Compras e Folha de Pagamento
 
-Em relação à folha de pagamento, a média mensal foi de {media_folha_formatted}, representando um valor relativamente constante ao longo do ano. Esse comportamento permite previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
+As compras têm se mantido estáveis, com uma média mensal de R$ 97.028,76. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações inesperadas. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
 
-**Vendas e Impostos (DAS)**
+Em relação à folha de pagamento, a média mensal foi de R$ 11.805,60, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
 
-O total de vendas realizadas no período foi de {total_vendas_formatted}, com uma média mensal de {media_vendas_formatted}. Comparando com o valor de DAS pago, que somou {total_das_formatted} durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
+Vendas e Impostos (DAS)
 
-**Total de Despesas e Custos vs Receita**
+O total de vendas realizadas no período foi de R$ 989.194,79, com uma média mensal de R$ 109.910,53. Comparando com o valor de DAS pago, que somou R$ 70.308,71 durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
 
-Ao observarmos o total de despesas, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a {total_despesas_formatted}. Com uma receita total de {total_vendas_formatted}, a empresa apresenta um saldo negativo de {saldo_negativo_formatted}, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
+Total de Despesas e Custos vs Receita
 
-Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter um controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para garantir a saúde financeira da empresa ao longo do ano.
-""")
+Ao observarmos o total de despesas, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a R$ 1.141.244,26. Com uma receita total de R$ 989.194,79, a empresa apresenta um saldo negativo de R$ 152.049,47, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
 
-# Ajuste final de estilo para os comentários
-st.markdown('''
-<style>
-h2, h3, h4 {
-    color: #A8AFB0;
-}
-p, li {
-    font-size: 16px;
-    line-height: 1.6;
-    color: #ffffff;
-}
-</style>
-''', unsafe_allow_html=True)
+Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter o controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para garantir essa sustentabilidade financeira ao longo do ano.
+"""
+
+st.write(comentarios_finais)
