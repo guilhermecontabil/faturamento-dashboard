@@ -33,12 +33,12 @@ st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
 st.markdown('''
 <style>
 body {
-    background: linear-gradient(135deg, #0f0e17, #1f1d36);
-    color: #ffffff;
+    background-color: #f0f2f6;
+    color: #000000;
 }
-h1, h3, h4, h2 {
+h1, h2, h3, h4 {
     text-align: center;
-    color: #a7f3d0;
+    color: #333333;
 }
 </style>
 ''', unsafe_allow_html=True)
@@ -47,13 +47,13 @@ h1, h3, h4, h2 {
 def metric_card(title, value, background, text_color):
     st.markdown(f'''
     <div style="
-        background: {background};
+        background-color: {background};
         padding: 20px;
         border-radius: 10px;
         text-align: center;
         color: {text_color};
         margin-bottom: 15px;
-        box-shadow: 0px 0px 15px rgba(0,0,0,0.2);
+        box-shadow: 0px 0px 15px rgba(0,0,0,0.1);
     ">
         <h3>{title}</h3>
         <p style="font-size: 24px; font-weight: bold;">{value}</p>
@@ -69,51 +69,49 @@ st.markdown(f"#### Período da análise: {fin_data['Período'].min()} a {fin_dat
 st.markdown("#### Resumo Financeiro Geral")
 col1, col2, col3 = st.columns(3)
 with col1:
-    metric_card("💰 Receita Total", f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #ff4b5c, #ff8a65)", text_color="white")
+    metric_card("💰 Receita Total", f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#e0f7fa", text_color="#006064")
 with col2:
-    metric_card("💸 Despesas Totais", f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #13c4a3, #1f1d36)", text_color="white")
+    metric_card("💸 Despesas Totais", f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#ffebee", text_color="#c62828")
 with col3:
-    metric_card("📊 Lucro/Prejuízo Total", f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #a7f3d0, #ff8a65)", text_color="white")
+    metric_card("📊 Lucro/Prejuízo Total", f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#e8f5e9", text_color="#2e7d32")
 
-# Indicadores Detalhados em Seção Separada e Estilizada com tema Neon
+# Indicadores Detalhados em Seção Separada
 st.markdown("#### Indicadores Detalhados")
 col4, col5, col6, col7, col8 = st.columns(5)
 with col4:
-    metric_card("📈 Total Vendas", f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #1f1d36, #ff8a65)", text_color="white")
+    metric_card("📈 Total Vendas", f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#e3f2fd", text_color="#1565c0")
 with col5:
-    metric_card("🛒 Total Compras", f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #ff8a65, #13c4a3)", text_color="white")
+    metric_card("🛒 Total Compras", f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#fff3e0", text_color="#ef6c00")
 with col6:
-    metric_card("👥 Total Salários", f"R$ {fin_data['Folha_Liquida'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #13c4a3, #1f1d36)", text_color="white")
+    metric_card("👥 Total Salários", f"R$ {fin_data['Folha_Liquida'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#f3e5f5", text_color="#6a1b9a")
 with col7:
-    metric_card("💵 Total DAS", f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #a7f3d0, #ff8a65)", text_color="white")
+    metric_card("💵 Total DAS", f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#e0f2f1", text_color="#004d40")
 with col8:
-    metric_card("📑 Total DCTFWeb", f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="linear-gradient(135deg, #ff4b5c, #ff8a65)", text_color="white")
+    metric_card("📑 Total DCTFWeb", f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#fbe9e7", text_color="#bf360c")
 
-# Receita x Compras com estilo Neon
+# Receita x Compras
 grafico_receita_compras = go.Figure()
 grafico_receita_compras.add_trace(go.Scatter(
     x=fin_data['Período'], y=fin_data['Vendas'],
     mode='lines+markers',
     name='Vendas',
-    line=dict(width=3, color='#13c4a3'),
-    marker=dict(size=8, color='#13c4a3', opacity=0.8)
+    line=dict(width=3, color='#1565c0'),
+    marker=dict(size=8, color='#1565c0', opacity=0.8)
 ))
 grafico_receita_compras.add_trace(go.Scatter(
     x=fin_data['Período'], y=fin_data['COMPRAS'],
     mode='lines+markers',
     name='Compras',
-    line=dict(width=3, color='#f72585'),
-    marker=dict(size=8, color='#f72585', opacity=0.8)
+    line=dict(width=3, color='#ef6c00'),
+    marker=dict(size=8, color='#ef6c00', opacity=0.8)
 ))
 grafico_receita_compras.update_layout(
     title="Comparativo de Receitas vs Compras",
     xaxis_title="Mês/Ano",
     yaxis_title="Valores em R$",
-    template="plotly_dark",
+    template="simple_white",
     title_font_size=20,
-    paper_bgcolor='rgba(15, 14, 23, 1)',
-    plot_bgcolor='rgba(15, 14, 23, 1)',
-    font=dict(color='#ffffff'),
+    font=dict(color='#000000'),
     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
 )
 
@@ -125,27 +123,25 @@ grafico_receita_das = px.bar(
     barmode='group',
     labels={"value": "Valores em R$", "Período": "Mês/Ano"},
     title="Receitas vs DAS (Imposto)",
-    color_discrete_sequence=['#f4d06f', '#13c4a3']
+    color_discrete_sequence=['#1976d2', '#c62828']
 )
-grafico_receita_das.update_layout(template="plotly_dark", title_font_size=20)
+grafico_receita_das.update_layout(template="simple_white", title_font_size=20)
 st.plotly_chart(grafico_receita_das, use_container_width=True)
 
 # Receita Total vs Despesas Totais
 grafico_receita_despesas = go.Figure()
 grafico_receita_despesas.add_trace(go.Scatter(x=fin_data['Período'], y=fin_data['Vendas'],
                                               mode='lines+markers', name='Receita Total',
-                                              line=dict(width=3, color='#ff4b5c')))
+                                              line=dict(width=3, color='#2e7d32')))
 grafico_receita_despesas.add_trace(go.Scatter(x=fin_data['Período'], y=fin_data['Despesas Totais'],
                                               mode='lines+markers', name='Despesas Totais',
-                                              line=dict(width=3, dash='dash', color='#13c4a3')))
+                                              line=dict(width=3, dash='dash', color='#c62828')))
 grafico_receita_despesas.update_layout(
     title="Receita Total vs Despesas Totais",
     xaxis_title="Mês/Ano",
     yaxis_title="Valores em R$",
-    template="plotly_dark",
-    title_font_size=20,
-    paper_bgcolor='rgba(15, 14, 23, 1)',
-    plot_bgcolor='rgba(15, 14, 23, 1)'
+    template="simple_white",
+    title_font_size=20
 )
 st.plotly_chart(grafico_receita_despesas, use_container_width=True)
 
@@ -154,13 +150,11 @@ grafico_lucro_prejuizo = px.area(
     fin_data, x='Período', y='Lucro/Prejuízo',
     labels={"Lucro/Prejuízo": "Valores em R$", "Período": "Mês/Ano"},
     title="Análise de Lucro/Prejuízo Mensal",
-    color_discrete_sequence=['#a7f3d0']
+    color_discrete_sequence=['#9e9d24']
 )
 grafico_lucro_prejuizo.update_layout(
-    template="plotly_dark",
-    title_font_size=20,
-    paper_bgcolor='rgba(15, 14, 23, 1)',
-    plot_bgcolor='rgba(15, 14, 23, 1)'
+    template="simple_white",
+    title_font_size=20
 )
 st.plotly_chart(grafico_lucro_prejuizo, use_container_width=True)
 
@@ -198,7 +192,7 @@ st.markdown("- **MAT USO CONSUMO**: R$ 31.785,62")
 
 # Comentário final
 st.markdown(
-    "<div style='text-align: center; font-size: 24px; color: #a7f3d0;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
+    "<div style='text-align: center; font-size: 24px; color: #333333;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
 )
 
 # Adicionando os comentários fornecidos
@@ -229,11 +223,12 @@ Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receita
 st.markdown('''
 <style>
 h2, h3, h4 {
-    color: #ff8a65;
+    color: #333333;
 }
 p {
     font-size: 16px;
     line-height: 1.6;
+    color: #000000;
 }
 </style>
 ''', unsafe_allow_html=True)
