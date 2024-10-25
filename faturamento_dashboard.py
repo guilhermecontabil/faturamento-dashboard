@@ -43,6 +43,10 @@ h1, h2, h3, h4 {
 </style>
 ''', unsafe_allow_html=True)
 
+# Função para formatar valores monetários
+def format_currency(value):
+    return f"R$ {value:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+
 # Função para criar um cartão métrico personalizado
 def metric_card(title, value, background, text_color):
     st.markdown(f'''
@@ -69,25 +73,25 @@ st.markdown(f"#### Período da análise: {fin_data['Período'].min()} a {fin_dat
 st.markdown("#### Resumo Financeiro Geral")
 col1, col2, col3 = st.columns(3)
 with col1:
-    metric_card("💰 Receita Total", f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#2196f3", text_color="#ffffff")
+    metric_card("💰 Receita Total", format_currency(fin_data['Vendas'].sum()), background="#2196f3", text_color="#ffffff")
 with col2:
-    metric_card("💸 Despesas Totais", f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#f44336", text_color="#ffffff")
+    metric_card("💸 Despesas Totais", format_currency(fin_data['Despesas Totais'].sum()), background="#f44336", text_color="#ffffff")
 with col3:
-    metric_card("📊 Lucro/Prejuízo Total", f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#4caf50", text_color="#ffffff")
+    metric_card("📊 Lucro/Prejuízo Total", format_currency(fin_data['Lucro/Prejuízo'].sum()), background="#4caf50", text_color="#ffffff")
 
 # Indicadores Detalhados em Seção Separada
 st.markdown("#### Indicadores Detalhados")
 col4, col5, col6, col7, col8 = st.columns(5)
 with col4:
-    metric_card("📈 Total Vendas", f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#03a9f4", text_color="#ffffff")
+    metric_card("📈 Total Vendas", format_currency(fin_data['Vendas'].sum()), background="#03a9f4", text_color="#ffffff")
 with col5:
-    metric_card("🛒 Total Compras", f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#ff9800", text_color="#ffffff")
+    metric_card("🛒 Total Compras", format_currency(fin_data['COMPRAS'].sum()), background="#ff9800", text_color="#ffffff")
 with col6:
-    metric_card("👥 Total Salários", f"R$ {fin_data['Folha_Liquida'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#9c27b0", text_color="#ffffff")
+    metric_card("👥 Total Salários", format_currency(fin_data['Folha_Liquida'].sum()), background="#9c27b0", text_color="#ffffff")
 with col7:
-    metric_card("💵 Total DAS", f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#009688", text_color="#ffffff")
+    metric_card("💵 Total DAS", format_currency(fin_data['DAS'].sum()), background="#009688", text_color="#ffffff")
 with col8:
-    metric_card("📑 Total DCTFWeb", f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'), background="#795548", text_color="#ffffff")
+    metric_card("📑 Total DCTFWeb", format_currency(fin_data['Darf DctfWeb'].sum()), background="#795548", text_color="#ffffff")
 
 # Receita x Compras
 grafico_receita_compras = go.Figure()
@@ -164,21 +168,21 @@ st.markdown("### Tabela Interativa para Consulta de Dados Financeiros")
 fin_data_display = fin_data.copy()
 colunas_monetarias = ['Darf DctfWeb', 'DAS', 'FGTS', 'Contribuicao_Assistencial', 'ISSQN Retido', 'COMPRAS', 'Vendas', 'Folha_Liquida', 'Despesas Totais', 'Lucro/Prejuízo']
 for coluna in colunas_monetarias:
-    fin_data_display[coluna] = fin_data_display[coluna].apply(lambda x: f"R$ {x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+    fin_data_display[coluna] = fin_data_display[coluna].apply(format_currency)
 
 # Adicionando uma linha de totais na tabela
 totais = {
     'Período': 'Totais',
-    'Darf DctfWeb': f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-    'DAS': f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-    'FGTS': f"R$ {fin_data['FGTS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-    'Contribuicao_Assistencial': f"R$ {fin_data['Contribuicao_Assistencial'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-    'ISSQN Retido': f"R$ {fin_data['ISSQN Retido'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-    'COMPRAS': f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-    'Vendas': f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-    'Folha_Liquida': f"R$ {fin_data['Folha_Liquida'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-    'Despesas Totais': f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
-    'Lucro/Prejuízo': f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    'Darf DctfWeb': format_currency(fin_data['Darf DctfWeb'].sum()),
+    'DAS': format_currency(fin_data['DAS'].sum()),
+    'FGTS': format_currency(fin_data['FGTS'].sum()),
+    'Contribuicao_Assistencial': format_currency(fin_data['Contribuicao_Assistencial'].sum()),
+    'ISSQN Retido': format_currency(fin_data['ISSQN Retido'].sum()),
+    'COMPRAS': format_currency(fin_data['COMPRAS'].sum()),
+    'Vendas': format_currency(fin_data['Vendas'].sum()),
+    'Folha_Liquida': format_currency(fin_data['Folha_Liquida'].sum()),
+    'Despesas Totais': format_currency(fin_data['Despesas Totais'].sum()),
+    'Lucro/Prejuízo': format_currency(fin_data['Lucro/Prejuízo'].sum())
 }
 fin_data_display = pd.concat([fin_data_display, pd.DataFrame([totais])], ignore_index=True)
 
@@ -195,26 +199,52 @@ st.markdown(
     "<div style='text-align: center; font-size: 24px; color: #1f4e79;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
 )
 
-# Adicionando os comentários fornecidos
+# Cálculos para os comentários finais
+num_meses = len(fin_data)
+
+total_compras = fin_data['COMPRAS'].sum()
+media_compras = total_compras / num_meses
+
+total_folha = fin_data['Folha_Liquida'].sum()
+media_folha = total_folha / num_meses
+
+total_vendas = fin_data['Vendas'].sum()
+media_vendas = total_vendas / num_meses
+
+total_das = fin_data['DAS'].sum()
+
+total_despesas = fin_data['Despesas Totais'].sum()
+saldo_negativo = total_vendas - total_despesas
+
+# Formatação dos valores
+media_compras_formatted = format_currency(media_compras)
+media_folha_formatted = format_currency(media_folha)
+total_vendas_formatted = format_currency(total_vendas)
+media_vendas_formatted = format_currency(media_vendas)
+total_das_formatted = format_currency(total_das)
+total_despesas_formatted = format_currency(total_despesas)
+saldo_negativo_formatted = format_currency(saldo_negativo)
+
+# Adicionando os comentários finais com valores calculados
 st.markdown("---")  # Linha separadora
 st.markdown("## Resumo do Desempenho Financeiro")
 
-st.markdown("""
+st.markdown(f"""
 Gostaria de compartilhar um resumo do desempenho financeiro da empresa de janeiro a setembro de 2024, focando em alguns pontos importantes sobre as **compras**, **folha de pagamento**, **vendas** e os **impostos pagos**.
 
 ### Compras e Folha de Pagamento
 
-As **compras** têm se mantido estáveis, com uma média mensal de **R$ 97.028,76**. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações inesperadas. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
+As **compras** têm se mantido estáveis, com uma média mensal de **{media_compras_formatted}**. Observamos que os valores variaram ao longo dos meses, mas têm se mantido dentro do esperado, sem grandes oscilações inesperadas. Isso mostra um controle consistente e bem ajustado em relação aos fornecimentos necessários.
 
-Em relação à **folha de pagamento**, a média mensal foi de **R$ 12.627,85**, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
+Em relação à **folha de pagamento**, a média mensal foi de **{media_folha_formatted}**, representando um valor relativamente constante ao longo do ano. Esse comportamento permite uma previsibilidade financeira e maior controle dos custos com pessoal, facilitando o planejamento financeiro.
 
 ### Vendas e Impostos (DAS)
 
-O total de **vendas** realizadas no período foi de **R$ 956.248,79**, com uma média mensal de **R$ 106.249,86**. Comparando com o valor de **DAS** pago, que somou **R$ 70.308,71** durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
+O total de **vendas** realizadas no período foi de **{total_vendas_formatted}**, com uma média mensal de **{media_vendas_formatted}**. Comparando com o valor de **DAS** pago, que somou **{total_das_formatted}** durante o mesmo período, temos uma relação clara entre a receita gerada e a carga tributária correspondente. Essa comparação é crucial para garantir que a margem de lucro da empresa esteja sendo mantida mesmo após o pagamento dos tributos.
 
 ### Total de Despesas e Custos vs Receita
 
-Ao observarmos o total de **despesas**, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a **R$ 1.003.803,79**. Com uma receita total de **R$ 956.248,79**, a empresa apresenta um **saldo negativo de R$ 47.555,00**, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
+Ao observarmos o total de **despesas**, que inclui compras, folha de pagamento e impostos, notamos que o valor acumulado das despesas chegou a **{total_despesas_formatted}**. Com uma receita total de **{total_vendas_formatted}**, a empresa apresenta um **saldo negativo de {saldo_negativo_formatted}**, indicando que, até o momento, as receitas não estão conseguindo cobrir os custos e as despesas.
 
 Esse resultado mostra que a empresa enfrentou um saldo negativo, onde as receitas não foram suficientes para cobrir os custos e despesas acumulados. É importante focar em aumentar as receitas e reduzir despesas para melhorar a sustentabilidade financeira. Recomendo manter o controle rigoroso sobre as compras e os custos fixos, especialmente considerando a carga tributária, para que possamos garantir essa sustentabilidade financeira ao longo do ano.
 """)
