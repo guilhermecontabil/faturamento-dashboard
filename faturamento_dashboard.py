@@ -29,11 +29,11 @@ fin_data['Lucro/Prejuízo'] = fin_data['Vendas'] - fin_data['Despesas Totais']
 # Configurando a página do Streamlit
 st.set_page_config(page_title="Dashboard Financeiro", layout="wide")
 
-# Estilo customizado para o fundo da página e estilo neon
+# Estilo customizado para o fundo da página e estilo neon com gradiente
 page_bg_img = '''
 <style>
 body {
-    background-color: #0f0e17;
+    background: linear-gradient(135deg, #0f0e17, #1f1d36);
     color: #ffffff;
 }
 </style>
@@ -41,7 +41,7 @@ body {
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Título do dashboard
-st.markdown("<h1 style='text-align: center; color: #a7f3d0;'>Dashboard Financeiro Neon</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #a7f3d0;'>Dashboard Financeiro </h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center; color: #ff8a65;'>Visão Geral das Receitas, Despesas e Lucros</h3>", unsafe_allow_html=True)
 
 # Período da Análise
@@ -107,8 +107,8 @@ grafico_receita_compras.update_layout(
     yaxis_title="Valores em R$",
     template="plotly_dark",
     title_font_size=20,
-    paper_bgcolor='#0f0e17',
-    plot_bgcolor='#0f0e17',
+    paper_bgcolor='rgba(15, 14, 23, 1)',
+    plot_bgcolor='rgba(15, 14, 23, 1)',
     font=dict(color='#ffffff'),
     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
 )
@@ -139,7 +139,9 @@ grafico_receita_despesas.update_layout(
     xaxis_title="Mês/Ano",
     yaxis_title="Valores em R$",
     template="plotly_dark",
-    title_font_size=20
+    title_font_size=20,
+    paper_bgcolor='rgba(15, 14, 23, 1)',
+    plot_bgcolor='rgba(15, 14, 23, 1)'
 )
 st.plotly_chart(grafico_receita_despesas, use_container_width=True)
 
@@ -150,7 +152,12 @@ grafico_lucro_prejuizo = px.area(
     title="Análise de Lucro/Prejuízo Mensal",
     color_discrete_sequence=['#a7f3d0']
 )
-grafico_lucro_prejuizo.update_layout(template="plotly_dark", title_font_size=20)
+grafico_lucro_prejuizo.update_layout(
+    template="plotly_dark",
+    title_font_size=20,
+    paper_bgcolor='rgba(15, 14, 23, 1)',
+    plot_bgcolor='rgba(15, 14, 23, 1)'
+)
 st.plotly_chart(grafico_lucro_prejuizo, use_container_width=True)
 
 # Tabela Interativa para Consulta
