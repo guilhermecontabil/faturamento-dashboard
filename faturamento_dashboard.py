@@ -120,4 +120,35 @@ st.plotly_chart(grafico_lucro_prejuizo, use_container_width=True)
 st.markdown("### Tabela Interativa para Consulta de Dados Financeiros")
 # Adicionando linha de totalização na tabela
 fin_data_display = fin_data.copy()
-colunas_monetarias = ['Darf DctfWeb', 'DAS', 'FGTS', 'Contribuicao_Assistencial', 'ISSQN Retido', 'COMPRAS', 'Vendas', 'Folha_Liquida', 'Despesas Totais', '
+colunas_monetarias = ['Darf DctfWeb', 'DAS', 'FGTS', 'Contribuicao_Assistencial', 'ISSQN Retido', 'COMPRAS', 'Vendas', 'Folha_Liquida', 'Despesas Totais', 'Lucro/Prejuízo']
+for coluna in colunas_monetarias:
+    fin_data_display[coluna] = fin_data_display[coluna].apply(lambda x: f"R$ {x:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'))
+
+# Adicionando uma linha de totais na tabela
+totais = {
+    'Período': 'Totais',
+    'Darf DctfWeb': f"R$ {fin_data['Darf DctfWeb'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'DAS': f"R$ {fin_data['DAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'FGTS': f"R$ {fin_data['FGTS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'Contribuicao_Assistencial': f"R$ {fin_data['Contribuicao_Assistencial'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'ISSQN Retido': f"R$ {fin_data['ISSQN Retido'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'COMPRAS': f"R$ {fin_data['COMPRAS'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'Vendas': f"R$ {fin_data['Vendas'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'Folha_Liquida': f"R$ {fin_data['Folha_Liquida'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'Despesas Totais': f"R$ {fin_data['Despesas Totais'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.'),
+    'Lucro/Prejuízo': f"R$ {fin_data['Lucro/Prejuízo'].sum():,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+}
+fin_data_display = pd.concat([fin_data_display, pd.DataFrame([totais])], ignore_index=True)
+
+st.dataframe(fin_data_display)
+
+# Outras Despesas Não Registradas na Planilha
+st.markdown("### Outras Despesas Não Registradas na Planilha")
+st.markdown("Essas despesas não estão incluídas nas demonstrações acima.")
+st.markdown("- COMPRA ATIVO: R$ 78.390,94")
+st.markdown("- MAT USO CONSUMO: R$ 31.785,62")
+
+# Comentário final
+st.markdown(
+    "<div style='text-align: center; font-size: 24px;'>Confie nos números e impulsione o crescimento da sua empresa!</div>", unsafe_allow_html=True
+)
